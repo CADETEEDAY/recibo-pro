@@ -43,9 +43,9 @@ jobs:
         run: |
           cat << 'EOF' > pubspec.yaml
           name: recibo_pro
-          description: "Sistema Avancado de Recibos Digitais em Material 3"
+          description: "Sistema Avancado de Recibos Digitais Material You"
           publish_to: 'none'
-          version: 2.3.0+5
+          version: 2.4.0+6
 
           environment:
             sdk: '>=3.0.0 <4.0.0'
@@ -98,12 +98,16 @@ jobs:
             }) async {
               final pdf = pw.Document();
 
+              final primaryColor = PdfColor.fromHex('3B82F6');
+              final darkColor = PdfColor.fromHex('181518');
+              final greenBadge = PdfColor.fromHex('4DC24D');
+
               pw.Widget buildViaBlock(String tagVia, {bool isReemissao = false}) {
                 return pw.Container(
                   padding: const pw.EdgeInsets.all(12),
                   decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: PdfColors.blueGrey800, width: 1.2),
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                    border: pw.Border.all(color: darkColor, width: 1.2),
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
                     color: PdfColors.white,
                   ),
                   child: pw.Column(
@@ -129,7 +133,7 @@ jobs:
                                   style: pw.TextStyle(
                                     fontSize: 13,
                                     fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.blueGrey900,
+                                    color: darkColor,
                                   ),
                                 ),
                                 if (documentoEmitente.isNotEmpty)
@@ -138,21 +142,21 @@ jobs:
                                 pw.Row(
                                   children: [
                                     pw.Text("RECIBO Nº: $numeroRecibo",
-                                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.indigo900)),
+                                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: primaryColor)),
                                     pw.SizedBox(width: 8),
                                     pw.Container(
                                       padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                       decoration: pw.BoxDecoration(
-                                        color: isReemissao ? PdfColors.amber100 : PdfColors.blueGrey50,
-                                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
-                                        border: pw.Border.all(color: isReemissao ? PdfColors.amber800 : PdfColors.blueGrey300, width: 0.5),
+                                        color: isReemissao ? PdfColors.amber100 : PdfColors.blue50,
+                                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                                        border: pw.Border.all(color: isReemissao ? PdfColors.amber800 : primaryColor, width: 0.5),
                                       ),
                                       child: pw.Text(
                                         tagVia,
                                         style: pw.TextStyle(
                                           fontSize: 7.5,
                                           fontWeight: pw.FontWeight.bold,
-                                          color: isReemissao ? PdfColors.amber900 : PdfColors.blueGrey900,
+                                          color: isReemissao ? PdfColors.amber900 : darkColor,
                                         ),
                                       ),
                                     ),
@@ -165,8 +169,8 @@ jobs:
                             padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: pw.BoxDecoration(
                               color: PdfColors.grey100,
-                              border: pw.Border.all(color: PdfColors.grey400, width: 0.8),
-                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                              border: pw.Border.all(color: PdfColors.grey300, width: 0.8),
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
                             ),
                             child: pw.Column(
                               crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -177,7 +181,7 @@ jobs:
                                   style: pw.TextStyle(
                                     fontSize: 14,
                                     fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.black,
+                                    color: greenBadge,
                                   ),
                                 ),
                               ],
@@ -194,9 +198,9 @@ jobs:
                             pw.TextSpan(text: pagador, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                             const pw.TextSpan(text: ", documento CPF/CNPJ nº "),
                             pw.TextSpan(text: documentoPagador, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                            const pw.TextSpan(text: ", a quantia líquida e certa de "),
+                            const pw.TextSpan(text: ", a quantia líquida de "),
                             pw.TextSpan(text: "R\$ $valor", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                            const pw.TextSpan(text: " correspondente ao pagamento descrito abaixo."),
+                            const pw.TextSpan(text: " correspondente ao pagamento abaixo especificado."),
                           ],
                         ),
                       ),
@@ -207,7 +211,7 @@ jobs:
                         decoration: pw.BoxDecoration(
                           color: PdfColors.grey50,
                           border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
-                          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+                          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
                         ),
                         child: pw.Text(
                           "Referente: $referente",
@@ -216,7 +220,7 @@ jobs:
                       ),
                       pw.SizedBox(height: 6),
                       pw.Text(
-                        "Para os devidos fins de direito, firmamos e damos plena, geral e irrevogável quitação da quantia paga.",
+                        "Para os devidos fins de direito, firmamos e damos plena e geral quitação.",
                         style: const pw.TextStyle(fontSize: 7.5, color: PdfColors.grey700),
                       ),
                       pw.SizedBox(height: 8),
@@ -269,18 +273,18 @@ jobs:
                     if (apenasSegundaVia) {
                       return pw.Column(
                         children: [
-                          buildViaBlock("2ª VIA - VIA DA EMPRESA (REEMISSÃO)", isReemissao: true),
+                          buildViaBlock("2ª VIA - EMPRESA (REEMISSÃO)", isReemissao: true),
                           pw.Padding(
                             padding: const pw.EdgeInsets.symmetric(vertical: 10),
                             child: pw.Row(
                               mainAxisAlignment: pw.MainAxisAlignment.center,
                               children: [
-                                pw.Text("--- 2ª VIA EMITIDA PARA COMPROVAÇÃO E ARQUIVO ---",
+                                pw.Text("--- 2ª VIA REEMITIDA PARA ARQUIVO ---",
                                     style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
                               ],
                             ),
                           ),
-                          buildViaBlock("2ª VIA - VIA DO CLIENTE (REEMISSÃO)", isReemissao: true),
+                          buildViaBlock("2ª VIA - CLIENTE (REEMISSÃO)", isReemissao: true),
                         ],
                       );
                     }
@@ -330,6 +334,16 @@ jobs:
 
           void main() => runApp(const ReciboProApp());
 
+          class ReciboColors {
+            static const skyBlue = Color(0xFF5A9EF3);
+            static const greenPill = Color(0xFF4DC24D);
+            static const darkPill = Color(0xFF181518);
+            static const softPink = Color(0xFFF69BD2);
+            static const coralSunset = Color(0xFFD55D3E);
+            static const background = Color(0xFFF3F2FA);
+            static const surfaceWhite = Colors.white;
+          }
+
           class ReciboProApp extends StatelessWidget {
             const ReciboProApp({super.key});
 
@@ -340,37 +354,47 @@ jobs:
                 debugShowCheckedModeBanner: false,
                 theme: ThemeData(
                   useMaterial3: true,
+                  scaffoldBackgroundColor: ReciboColors.background,
                   colorScheme: ColorScheme.fromSeed(
-                    seedColor: const Color(0xFF1E3A8A), // Azul Safira Corporativo M3
-                    brightness: Brightness.light,
+                    seedColor: ReciboColors.skyBlue,
+                    primary: ReciboColors.skyBlue,
+                    secondary: ReciboColors.greenPill,
+                    tertiary: ReciboColors.softPink,
+                    surface: ReciboColors.surfaceWhite,
+                    onSurface: ReciboColors.darkPill,
                   ),
                   appBarTheme: const AppBarTheme(
+                    backgroundColor: ReciboColors.background,
+                    foregroundColor: ReciboColors.darkPill,
                     centerTitle: true,
                     elevation: 0,
-                    scrolledUnderElevation: 2,
+                    titleTextStyle: TextStyle(
+                      color: ReciboColors.darkPill,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   cardTheme: CardTheme(
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      side: BorderSide(color: Colors.grey.shade200, width: 1),
+                      borderRadius: BorderRadius.circular(22),
                     ),
-                    color: Colors.white,
+                    color: ReciboColors.surfaceWhite,
                   ),
                   inputDecorationTheme: InputDecorationTheme(
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: ReciboColors.surfaceWhite,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Color(0xFFE2E0EE)),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Color(0xFFE2E0EE)),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF1E3A8A), width: 2),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: ReciboColors.skyBlue, width: 2),
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
@@ -417,7 +441,7 @@ jobs:
               _dataAtual = DateFormat('dd/MM/yyyy').format(DateTime.now());
               _signatureController = SignatureController(
                 penStrokeWidth: 3.2,
-                penColor: const Color(0xFF1E3A8A),
+                penColor: ReciboColors.darkPill,
                 exportBackgroundColor: Colors.transparent,
               );
               _carregarConfiguracoes();
@@ -461,15 +485,15 @@ jobs:
                 context: context,
                 builder: (ctx) => AlertDialog(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  icon: const Icon(Icons.warning_amber_rounded, size: 36, color: Colors.amber),
+                  icon: const Icon(Icons.warning_amber_rounded, size: 36, color: ReciboColors.coralSunset),
                   title: const Text('Zerar Numeração?'),
-                  content: const Text('O próximo recibo emitido terá o número 0001. Esta ação reinicia a sequência contábil do app.'),
+                  content: const Text('O próximo recibo será reiniciado para 0001. Confirma?'),
                   actions: [
                     TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-                    FilledButton.tonal(
-                      style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.errorContainer),
+                    FilledButton(
+                      style: FilledButton.styleFrom(backgroundColor: ReciboColors.coralSunset),
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: Text('Zerar', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      child: const Text('Confirmar e Zerar'),
                     ),
                   ],
                 ),
@@ -483,7 +507,7 @@ jobs:
                 await prefs.setInt('recibo_sequencial', 1);
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(behavior: SnackBarBehavior.floating, content: Text('Numeração reiniciada para 0001!')),
+                  const SnackBar(behavior: SnackBarBehavior.floating, content: Text('Numeração zerada para 0001!')),
                 );
               }
             }
@@ -597,8 +621,9 @@ jobs:
                           Navigator.pop(ctx);
                         },
                         style: FilledButton.styleFrom(
+                          backgroundColor: ReciboColors.skyBlue,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         child: const Text('Salvar Cliente', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
@@ -648,7 +673,7 @@ jobs:
                     const SnackBar(
                       behavior: SnackBarBehavior.floating,
                       content: Text('Por favor, informe o Nome do Operador!'),
-                      backgroundColor: Colors.red,
+                      backgroundColor: ReciboColors.coralSunset,
                     ),
                   );
                   return;
@@ -759,8 +784,6 @@ jobs:
                   ? _recibosSalvos[_editingReciboIndex!]['numero']
                   : _numeroSequencial.toString().padLeft(4, '0');
 
-              final colorScheme = Theme.of(context).colorScheme;
-
               return SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 child: Form(
@@ -768,62 +791,66 @@ jobs:
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Card(
-                        color: colorScheme.surfaceContainerHigh,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                      // Card Topo com Formato Pill inspirado no Android
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [ReciboColors.skyBlue, Color(0xFF867BF0), ReciboColors.coralSunset],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "RECIBO DIGITAL",
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: 0.8),
+                                ),
+                                Text(
+                                  "Nº $numExibicao",
+                                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    _editingReciboIndex != null ? "EDITANDO RECIBO" : "NÚMERO DO RECIBO",
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: colorScheme.primary, letterSpacing: 0.5),
-                                  ),
-                                  Text(
-                                    "Nº $numExibicao",
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-                                  ),
+                                  const Icon(Icons.calendar_month, size: 16, color: Colors.white),
+                                  const SizedBox(width: 6),
+                                  Text(_dataAtual, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                                 ],
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.calendar_today_outlined, size: 14, color: colorScheme.primary),
-                                    const SizedBox(width: 6),
-                                    Text(_dataAtual, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _operadorController,
                         decoration: const InputDecoration(
                           labelText: 'Nome do Operador / Emitente *',
-                          prefixIcon: Icon(Icons.badge_outlined),
+                          prefixIcon: Icon(Icons.badge_outlined, color: ReciboColors.skyBlue),
                           helperText: 'Obrigatório para emissão',
                         ),
                         validator: (v) => v!.trim().isEmpty ? 'Informe o nome do operador' : null,
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _pagadorController,
                         decoration: const InputDecoration(
                           labelText: 'Nome do Cliente / Pagador',
-                          prefixIcon: Icon(Icons.person_outline),
+                          prefixIcon: Icon(Icons.person_outline, color: ReciboColors.skyBlue),
                         ),
                         validator: (v) => v!.isEmpty ? 'Informe o nome do cliente' : null,
                       ),
@@ -832,7 +859,7 @@ jobs:
                         controller: _docPagadorController,
                         decoration: const InputDecoration(
                           labelText: 'CPF / CNPJ do Cliente',
-                          prefixIcon: Icon(Icons.credit_card_outlined),
+                          prefixIcon: Icon(Icons.credit_card_outlined, color: ReciboColors.skyBlue),
                         ),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Informe o documento' : null,
@@ -843,7 +870,7 @@ jobs:
                         decoration: const InputDecoration(
                           labelText: 'Valor Total',
                           prefixText: 'R\$ ',
-                          prefixIcon: Icon(Icons.attach_money),
+                          prefixIcon: Icon(Icons.attach_money, color: ReciboColors.greenPill),
                         ),
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         validator: (v) => v!.isEmpty ? 'Informe o valor' : null,
@@ -854,7 +881,7 @@ jobs:
                         maxLines: 2,
                         decoration: const InputDecoration(
                           labelText: 'Referente a...',
-                          prefixIcon: Icon(Icons.description_outlined),
+                          prefixIcon: Icon(Icons.description_outlined, color: ReciboColors.skyBlue),
                         ),
                         validator: (v) => v!.isEmpty ? 'Informe a descrição' : null,
                       ),
@@ -862,11 +889,17 @@ jobs:
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Assinatura Digital", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                          Row(
+                            children: const [
+                              Icon(Icons.draw_outlined, size: 20, color: ReciboColors.softPink),
+                              SizedBox(width: 8),
+                              Text("Assinatura Digital", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: ReciboColors.darkPill)),
+                            ],
+                          ),
                           TextButton.icon(
                             onPressed: () => _signatureController.clear(),
-                            icon: const Icon(Icons.clear_all, size: 18),
-                            label: const Text('Limpar'),
+                            icon: const Icon(Icons.clear_all, size: 18, color: ReciboColors.coralSunset),
+                            label: const Text('Limpar', style: TextStyle(color: ReciboColors.coralSunset)),
                           ),
                         ],
                       ),
@@ -874,11 +907,11 @@ jobs:
                         height: 125,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFE2E0EE)),
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(20),
                           child: Signature(controller: _signatureController, height: 125, backgroundColor: Colors.white),
                         ),
                       ),
@@ -891,8 +924,10 @@ jobs:
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                         style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          backgroundColor: ReciboColors.darkPill,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                         ),
                       ),
                     ],
@@ -909,8 +944,6 @@ jobs:
                 return nome.contains(query) || num.contains(query);
               }).toList();
 
-              final colorScheme = Theme.of(context).colorScheme;
-
               return Column(
                 children: [
                   Padding(
@@ -918,9 +951,9 @@ jobs:
                     child: SearchBar(
                       controller: _buscaReciboController,
                       elevation: const WidgetStatePropertyAll(0),
-                      backgroundColor: WidgetStatePropertyAll(colorScheme.surfaceContainerHigh),
-                      hintText: 'Pesquisar por cliente ou nº...',
-                      leading: const Icon(Icons.search),
+                      backgroundColor: const WidgetStatePropertyAll(Colors.white),
+                      hintText: 'Pesquisar recibo ou cliente...',
+                      leading: const Icon(Icons.search, color: ReciboColors.skyBlue),
                       trailing: [
                         if (_buscaReciboController.text.isNotEmpty)
                           IconButton(
@@ -940,7 +973,7 @@ jobs:
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey.shade400),
+                                Icon(Icons.receipt_long_outlined, size: 52, color: Colors.grey.shade400),
                                 const SizedBox(height: 10),
                                 const Text("Nenhum recibo arquivado.", style: TextStyle(color: Colors.grey)),
                               ],
@@ -954,9 +987,9 @@ jobs:
                               final realIndex = _recibosSalvos.indexOf(r);
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(14),
+                                  padding: const EdgeInsets.all(16),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -964,45 +997,53 @@ jobs:
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                             decoration: BoxDecoration(
-                                              color: colorScheme.primaryContainer,
-                                              borderRadius: BorderRadius.circular(8),
+                                              color: ReciboColors.darkPill,
+                                              borderRadius: BorderRadius.circular(16),
                                             ),
                                             child: Text("Nº ${r['numero']}",
-                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: colorScheme.onPrimaryContainer)),
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white)),
                                           ),
-                                          Text("R\$ ${r['valor']}",
-                                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: colorScheme.primary)),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: ReciboColors.greenPill.withOpacity(0.15),
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            child: Text("R\$ ${r['valor']}",
+                                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: ReciboColors.greenPill)),
+                                          ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(r['pagador'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                      const SizedBox(height: 10),
+                                      Text(r['pagador'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: ReciboColors.darkPill)),
                                       Text("Data: ${r['data']} • Op: ${r['operador'] ?? 'Geral'}",
-                                          style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                                       Text(r['referente'],
-                                          maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                                      const Divider(height: 18),
+                                          maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                                      const Divider(height: 20),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
-                                          FilledButton.tonalIcon(
+                                          FilledButton.icon(
                                             style: FilledButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              backgroundColor: ReciboColors.greenPill,
+                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                                             ),
                                             icon: const Icon(Icons.print_outlined, size: 16),
-                                            label: const Text("2ª Via", style: TextStyle(fontSize: 12)),
+                                            label: const Text("Imprimir 2ª Via", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                                             onPressed: () => _imprimirSegundaVia(r),
                                           ),
                                           const SizedBox(width: 8),
                                           IconButton(
-                                            icon: const Icon(Icons.edit_outlined, color: Colors.amber),
+                                            icon: const Icon(Icons.edit_outlined, color: ReciboColors.skyBlue),
                                             tooltip: 'Editar Recibo',
                                             onPressed: () => _carregarReciboParaEdicao(realIndex),
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                            icon: const Icon(Icons.delete_outline, color: ReciboColors.coralSunset),
                                             tooltip: 'Excluir',
                                             onPressed: () async {
                                               final prefs = await SharedPreferences.getInstance();
@@ -1031,14 +1072,15 @@ jobs:
                 return nome.contains(query);
               }).toList();
 
-              final colorScheme = Theme.of(context).colorScheme;
-
               return Scaffold(
                 backgroundColor: Colors.transparent,
                 floatingActionButton: FloatingActionButton.extended(
                   onPressed: () => _abrirModalCliente(),
+                  backgroundColor: ReciboColors.skyBlue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   icon: const Icon(Icons.person_add_alt_1),
-                  label: const Text("Novo Cliente"),
+                  label: const Text("Novo Cliente", style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 body: Column(
                   children: [
@@ -1047,9 +1089,9 @@ jobs:
                       child: SearchBar(
                         controller: _buscaClienteController,
                         elevation: const WidgetStatePropertyAll(0),
-                        backgroundColor: WidgetStatePropertyAll(colorScheme.surfaceContainerHigh),
+                        backgroundColor: const WidgetStatePropertyAll(Colors.white),
                         hintText: 'Pesquisar cliente (A-Z)...',
-                        leading: const Icon(Icons.search),
+                        leading: const Icon(Icons.search, color: ReciboColors.skyBlue),
                         trailing: [
                           if (_buscaClienteController.text.isNotEmpty)
                             IconButton(
@@ -1069,7 +1111,7 @@ jobs:
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.people_outline, size: 48, color: Colors.grey.shade400),
+                                  Icon(Icons.people_outline, size: 52, color: Colors.grey.shade400),
                                   const SizedBox(height: 10),
                                   const Text("Nenhum cliente cadastrado.", style: TextStyle(color: Colors.grey)),
                                 ],
@@ -1083,21 +1125,22 @@ jobs:
                                 final realIndex = _clientesSalvos.indexOf(c);
                                 return Card(
                                   margin: const EdgeInsets.only(bottom: 10),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                   child: ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     leading: CircleAvatar(
-                                      backgroundColor: colorScheme.primaryContainer,
-                                      foregroundColor: colorScheme.onPrimaryContainer,
-                                      child: Text(c['nome'][0].toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      radius: 24,
+                                      backgroundColor: ReciboColors.softPink.withOpacity(0.3),
+                                      foregroundColor: ReciboColors.darkPill,
+                                      child: Text(c['nome'][0].toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                     ),
-                                    title: Text(c['nome'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    title: Text(c['nome'], style: const TextStyle(fontWeight: FontWeight.bold, color: ReciboColors.darkPill)),
                                     subtitle: Text("Doc: ${c['documento'] ?? '-'}\nTel: ${c['telefone'] ?? '-'}"),
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
-                                          icon: Icon(Icons.receipt_long, color: colorScheme.primary),
+                                          icon: const Icon(Icons.receipt_long, color: ReciboColors.greenPill),
                                           tooltip: 'Preencher Recibo',
                                           onPressed: () => _preencherReciboComCliente(c),
                                         ),
@@ -1107,7 +1150,7 @@ jobs:
                                           onPressed: () => _abrirModalCliente(c, realIndex),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                          icon: const Icon(Icons.delete_outline, color: ReciboColors.coralSunset),
                                           tooltip: 'Excluir',
                                           onPressed: () {
                                             _clientesSalvos.removeAt(realIndex);
@@ -1127,22 +1170,20 @@ jobs:
             }
 
             Widget _buildConfigAba() {
-              final colorScheme = Theme.of(context).colorScheme;
-
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Dados da Empresa / Emitente",
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                            const Text("Dados da Empresa / Emitente",
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ReciboColors.darkPill)),
                             const SizedBox(height: 14),
                             TextFormField(
                               controller: _emitenteController,
@@ -1162,16 +1203,20 @@ jobs:
                                     height: 60,
                                     margin: const EdgeInsets.only(right: 12),
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(16),
                                       border: Border.all(color: Colors.grey.shade300),
                                       image: DecorationImage(image: MemoryImage(_logoBytes!), fit: BoxFit.contain),
                                     ),
                                   ),
                                 Expanded(
                                   child: OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    ),
                                     onPressed: _selecionarLogo,
-                                    icon: const Icon(Icons.image_outlined),
-                                    label: Text(_logoBytes == null ? 'Adicionar Logo' : 'Alterar Logo'),
+                                    icon: const Icon(Icons.image_outlined, color: ReciboColors.skyBlue),
+                                    label: Text(_logoBytes == null ? 'Adicionar Logo' : 'Alterar Logo', style: const TextStyle(color: ReciboColors.darkPill)),
                                   ),
                                 ),
                               ],
@@ -1180,10 +1225,11 @@ jobs:
                             FilledButton(
                               onPressed: _salvarConfiguracoes,
                               style: FilledButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                backgroundColor: ReciboColors.skyBlue,
+                                minimumSize: const Size.fromHeight(50),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
-                              child: const Text('Salvar Dados da Empresa'),
+                              child: const Text('Salvar Dados da Empresa', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -1191,22 +1237,27 @@ jobs:
                     ),
                     const SizedBox(height: 14),
                     Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Controle de Numeração",
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                            const Text("Controle de Numeração",
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ReciboColors.darkPill)),
                             const SizedBox(height: 8),
                             Text("Próximo número: ${_numeroSequencial.toString().padLeft(4, '0')}",
-                                style: const TextStyle(fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 12),
+                                style: const TextStyle(fontWeight: FontWeight.w600, color: ReciboColors.skyBlue)),
+                            const SizedBox(height: 14),
                             OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: ReciboColors.coralSunset,
+                                side: const BorderSide(color: ReciboColors.coralSunset),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
                               onPressed: _zerarNumeracao,
-                              icon: const Icon(Icons.restart_alt, color: Colors.red),
-                              label: const Text('Zerar Numeração de Recibos', style: TextStyle(color: Colors.red)),
+                              icon: const Icon(Icons.restart_alt),
+                              label: const Text('Zerar Numeração de Recibos'),
                             ),
                           ],
                         ),
@@ -1214,43 +1265,51 @@ jobs:
                     ),
                     const SizedBox(height: 14),
                     Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      color: colorScheme.surfaceContainerHigh,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      color: ReciboColors.darkPill,
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: [
-                                Icon(Icons.code, color: colorScheme.primary),
-                                const SizedBox(width: 8),
+                              children: const [
+                                Icon(Icons.code, color: ReciboColors.softPink),
+                                SizedBox(width: 8),
                                 Text("Desenvolvedor",
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            const Text("Robson Cadete", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 10),
+                            const Text("Robson Cadete", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
                             const SizedBox(height: 4),
-                            const Text("E-mail: robson.cadete@gmail.com"),
-                            const Text("Telefone: (21) 97462-3033"),
-                            const SizedBox(height: 14),
+                            const Text("E-mail: robson.cadete@gmail.com", style: TextStyle(color: Colors.white70)),
+                            const Text("Telefone: (21) 97462-3033", style: TextStyle(color: Colors.white70)),
+                            const SizedBox(height: 16),
                             Row(
                               children: [
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: _abrirWhatsApp,
                                     icon: const Icon(Icons.chat),
-                                    label: const Text("WhatsApp"),
-                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF25D366), foregroundColor: Colors.white),
+                                    label: const Text("WhatsApp", style: TextStyle(fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: ReciboColors.greenPill,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: OutlinedButton.icon(
                                     onPressed: _abrirEmail,
-                                    icon: const Icon(Icons.email_outlined),
-                                    label: const Text("E-mail"),
+                                    icon: const Icon(Icons.email_outlined, color: Colors.white),
+                                    label: const Text("E-mail", style: TextStyle(color: Colors.white)),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: Colors.white38),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1268,7 +1327,7 @@ jobs:
             Widget build(BuildContext context) {
               return Scaffold(
                 appBar: AppBar(
-                  title: const Text('Recibo Pro', style: TextStyle(fontWeight: FontWeight.bold)),
+                  title: const Text('Recibo Pro'),
                 ),
                 body: IndexedStack(
                   index: _currentIndex,
@@ -1280,13 +1339,16 @@ jobs:
                   ],
                 ),
                 bottomNavigationBar: NavigationBar(
+                  elevation: 0,
+                  backgroundColor: Colors.white,
+                  indicatorColor: ReciboColors.skyBlue.withOpacity(0.2),
                   selectedIndex: _currentIndex,
                   onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
                   destinations: const [
-                    NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Emitir'),
-                    NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Clientes'),
-                    NavigationDestination(icon: Icon(Icons.history_outlined), selectedIcon: Icon(Icons.history), label: 'Salvos'),
-                    NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Empresa'),
+                    NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long, color: ReciboColors.skyBlue), label: 'Emitir'),
+                    NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people, color: ReciboColors.skyBlue), label: 'Clientes'),
+                    NavigationDestination(icon: Icon(Icons.history_outlined), selectedIcon: Icon(Icons.history, color: ReciboColors.skyBlue), label: 'Salvos'),
+                    NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings, color: ReciboColors.skyBlue), label: 'Empresa'),
                   ],
                 ),
               );
