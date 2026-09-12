@@ -45,7 +45,7 @@ jobs:
           name: recibo_pro
           description: "Sistema Avancado de Recibos Digitais"
           publish_to: 'none'
-          version: 2.1.0+3
+          version: 2.2.0+4
 
           environment:
             sdk: '>=3.0.0 <4.0.0'
@@ -94,28 +94,31 @@ jobs:
               required String operador,
               Uint8List? signatureBytes,
               Uint8List? logoBytes,
+              bool apenasSegundaVia = false,
             }) async {
               final pdf = pw.Document();
 
-              pw.Widget buildVia(String viaTitulo) {
+              pw.Widget buildViaBlock(String tagVia, {bool isReemissao = false}) {
                 return pw.Container(
-                  padding: const pw.EdgeInsets.all(16),
+                  padding: const pw.EdgeInsets.all(12),
                   decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: PdfColors.blueGrey800, width: 1.5),
+                    border: pw.Border.all(color: PdfColors.blueGrey800, width: 1.2),
                     borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                    color: PdfColors.white,
                   ),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    mainAxisSize: pw.MainAxisSize.min,
                     children: [
+                      // Linha Topo: Logotipo + Identificacao + Valor em Destaque
                       pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: pw.CrossAxisAlignment.center,
                         children: [
                           if (logoBytes != null)
                             pw.Container(
-                              width: 55,
-                              height: 55,
-                              margin: const pw.EdgeInsets.only(right: 12),
+                              width: 50,
+                              height: 50,
+                              margin: const pw.EdgeInsets.only(right: 10),
                               child: pw.Image(pw.MemoryImage(logoBytes), fit: pw.BoxFit.contain),
                             ),
                           pw.Expanded(
@@ -123,49 +126,107 @@ jobs:
                               crossAxisAlignment: pw.CrossAxisAlignment.start,
                               children: [
                                 pw.Text(
-                                  "RECIBO DE PAGAMENTO",
+                                  emitente.isNotEmpty ? emitente.toUpperCase() : "RECIBO DE PAGAMENTO",
                                   style: pw.TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 13,
                                     fontWeight: pw.FontWeight.bold,
                                     color: PdfColors.blueGrey900,
                                   ),
                                 ),
-                                pw.Text("Nº: $numeroRecibo  |  $viaTitulo",
-                                    style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700, fontWeight: pw.FontWeight.bold)),
+                                if (documentoEmitente.isNotEmpty)
+                                  pw.Text("CNPJ/CPF: $documentoEmitente",
+                                      style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+                                pw.Row(
+                                  children: [
+                                    pw.Text("RECIBO Nº: $numeroRecibo",
+                                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.indigo900)),
+                                    pw.SizedBox(width: 8),
+                                    pw.Container(
+                                      padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                      decoration: pw.BoxDecoration(
+                                        color: isReemissao ? PdfColors.amber100 : PdfColors.blueGrey50,
+                                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+                                        border: pw.Border.all(color: isReemissao ? PdfColors.amber800 : PdfColors.blueGrey300, width: 0.5),
+                                      ),
+                                      child: pw.Text(
+                                        tagVia,
+                                        style: pw.TextStyle(
+                                          fontSize: 7.5,
+                                          fontWeight: pw.FontWeight.bold,
+                                          color: isReemissao ? PdfColors.amber900 : PdfColors.blueGrey900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
                           pw.Container(
-                            padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: const pw.BoxDecoration(
-                              color: PdfColors.grey200,
-                              borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: pw.BoxDecoration(
+                              color: PdfColors.grey100,
+                              border: pw.Border.all(color: PdfColors.grey400, width: 0.8),
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
                             ),
-                            child: pw.Text(
-                              "R\$ $valor",
-                              style: pw.TextStyle(
-                                fontSize: 14,
-                                fontWeight: pw.FontWeight.bold,
-                                color: PdfColors.black,
-                              ),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.end,
+                              children: [
+                                pw.Text("VALOR TOTAL", style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
+                                pw.Text(
+                                  "R\$ $valor",
+                                  style: pw.TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      pw.Divider(thickness: 0.8, height: 16),
-                      pw.Paragraph(
-                        text: "Recebi(emos) de $pagador, CPF/CNPJ: $documentoPagador, a quantia de R\$ $valor.",
-                        style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
+                      pw.Divider(thickness: 0.6, height: 12),
+
+                      // Declaracao de Quitação
+                      pw.RichText(
+                        text: pw.TextSpan(
+                          style: const pw.TextStyle(fontSize: 9.5, lineSpacing: 1.2),
+                          children: [
+                            const pw.TextSpan(text: "Recebemos de "),
+                            pw.TextSpan(text: pagador, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                            const pw.TextSpan(text: ", documento CPF/CNPJ nº "),
+                            pw.TextSpan(text: documentoPagador, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                            const pw.TextSpan(text: ", a quantia líquida e certa de "),
+                            pw.TextSpan(text: "R\$ $valor", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                            const pw.TextSpan(text: " correspondente ao pagamento descrito abaixo."),
+                          ],
+                        ),
                       ),
-                      pw.Paragraph(
-                        text: "Referente a: $referente.",
-                        style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
+                      pw.SizedBox(height: 5),
+
+                      // Box de Referente / Descricao
+                      pw.Container(
+                        width: double.infinity,
+                        padding: const pw.EdgeInsets.all(6),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.grey50,
+                          border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+                          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+                        ),
+                        child: pw.Text(
+                          "Referente: $referente",
+                          style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.black),
+                        ),
                       ),
-                      pw.Paragraph(
-                        text: "Para clareza e firmeza do acordado, firmo(amos) a plena quitação.",
-                        style: const pw.TextStyle(fontSize: 9, lineSpacing: 1.2, color: PdfColors.grey800),
+                      pw.SizedBox(height: 6),
+                      pw.Text(
+                        "Para os devidos fins de direito, firmamos e damos plena, geral e irrevogável quitação da quantia paga.",
+                        style: const pw.TextStyle(fontSize: 7.5, color: PdfColors.grey700),
                       ),
-                      pw.SizedBox(height: 10),
+                      pw.SizedBox(height: 8),
+
+                      // Rodape: Data / Operador / Assinatura
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -173,9 +234,10 @@ jobs:
                           pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
-                              pw.Text("Data: $data", style: const pw.TextStyle(fontSize: 10)),
-                              pw.SizedBox(height: 2),
-                              pw.Text("Operador: $operador", style: pw.TextStyle(fontSize: 9, color: PdfColors.grey700, fontStyle: pw.FontStyle.italic)),
+                              pw.Text("Emissão: $data", style: const pw.TextStyle(fontSize: 8)),
+                              if (operador.isNotEmpty)
+                                pw.Text("Operador: $operador",
+                                    style: pw.TextStyle(fontSize: 7.5, color: PdfColors.grey800, fontStyle: pw.FontStyle.italic)),
                             ],
                           ),
                           pw.Column(
@@ -183,21 +245,20 @@ jobs:
                             children: [
                               if (signatureBytes != null)
                                 pw.Container(
-                                  height: 40,
-                                  width: 140,
+                                  height: 32,
+                                  width: 120,
                                   child: pw.Image(pw.MemoryImage(signatureBytes), fit: pw.BoxFit.contain),
                                 )
                               else
-                                pw.SizedBox(height: 40),
+                                pw.SizedBox(height: 32),
                               pw.Container(
-                                width: 170,
+                                width: 150,
                                 decoration: const pw.BoxDecoration(
-                                  border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8)),
+                                  border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.7)),
                                 ),
                               ),
-                              pw.SizedBox(height: 3),
-                              pw.Text(emitente, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-                              pw.Text("Doc: $documentoEmitente", style: const pw.TextStyle(fontSize: 8)),
+                              pw.SizedBox(height: 2),
+                              pw.Text("Assinatura do Emitente", style: const pw.TextStyle(fontSize: 7.5)),
                             ],
                           ),
                         ],
@@ -210,33 +271,52 @@ jobs:
               pdf.addPage(
                 pw.Page(
                   pageFormat: PdfPageFormat.a4,
-                  margin: const pw.EdgeInsets.all(20),
+                  margin: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   build: (pw.Context context) {
+                    if (apenasSegundaVia) {
+                      return pw.Column(
+                        children: [
+                          buildViaBlock("2ª VIA - VIA DA EMPRESA (REEMISSÃO)", isReemissao: true),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.symmetric(vertical: 10),
+                            child: pw.Row(
+                              mainAxisAlignment: pw.MainAxisAlignment.center,
+                              children: [
+                                pw.Text("--- 2ª VIA EMITIDA PARA COMPROVAÇÃO E ARQUIVO ---",
+                                    style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+                              ],
+                            ),
+                          ),
+                          buildViaBlock("2ª VIA - VIA DO CLIENTE (REEMISSÃO)", isReemissao: true),
+                        ],
+                      );
+                    }
+
                     return pw.Column(
                       children: [
-                        buildVia("1ª VIA - CLIENTE"),
+                        buildViaBlock("1ª VIA - CLIENTE"),
                         pw.Padding(
-                          padding: const pw.EdgeInsets.symmetric(vertical: 12),
+                          padding: const pw.EdgeInsets.symmetric(vertical: 10),
                           child: pw.Row(
                             mainAxisAlignment: pw.MainAxisAlignment.center,
                             children: [
                               pw.Text(
-                                "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
-                                style: const pw.TextStyle(color: PdfColors.grey500, fontSize: 7),
+                                "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+                                style: const pw.TextStyle(color: PdfColors.grey500, fontSize: 6),
                               ),
                             ],
                           ),
                         ),
-                        buildVia("2ª VIA - EMPRESA"),
+                        buildViaBlock("2ª VIA - EMPRESA"),
                       ],
                     );
                   },
                 ),
               );
 
-              await Printing.sharePdf(
-                bytes: await pdf.save(),
-                filename: 'recibo_$numeroRecibo.pdf',
+              await Printing.layoutPdf(
+                onLayout: (PdfPageFormat format) async => pdf.save(),
+                name: 'recibo_${numeroRecibo}_${apenasSegundaVia ? "2via" : "completo"}.pdf',
               );
             }
           }
@@ -374,13 +454,13 @@ jobs:
                 context: context,
                 builder: (ctx) => AlertDialog(
                   title: const Text('Zerar Numeração?'),
-                  content: const Text('O próximo recibo será gerado com o número 0001. Deseja continuar?'),
+                  content: const Text('O próximo recibo será reiniciado para 0001. Confirma?'),
                   actions: [
                     TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('Zerar'),
+                      child: const Text('Confirmar e Zerar'),
                     ),
                   ],
                 ),
@@ -393,7 +473,7 @@ jobs:
                 });
                 await prefs.setInt('recibo_sequencial', 1);
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Numeração reiniciada para 0001!')));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Numeração zerada para 0001!')));
               }
             }
 
@@ -451,7 +531,7 @@ jobs:
               showDialog(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: Text(clienteExistente == null ? 'Novo Cliente' : 'Editar Cliente'),
+                  title: Text(clienteExistente == null ? 'Cadastrar Cliente' : 'Editar Cliente'),
                   content: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -493,10 +573,10 @@ jobs:
               setState(() {
                 _pagadorController.text = cliente['nome'] ?? '';
                 _docPagadorController.text = cliente['documento'] ?? '';
-                _currentIndex = 0; // Vai para a aba de emitir
+                _currentIndex = 0;
               });
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Cliente ${cliente['nome']} carregado no recibo!")),
+                SnackBar(content: Text("Cliente ${cliente['nome']} selecionado!")),
               );
             }
 
@@ -509,7 +589,7 @@ jobs:
                 _valorController.text = r['valor'] ?? '';
                 _referenteController.text = r['referente'] ?? '';
                 if (r['operador'] != null) _operadorController.text = r['operador'];
-                _currentIndex = 0; // Volta para aba de emissão
+                _currentIndex = 0;
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text("Editando Recibo Nº ${r['numero']}")),
@@ -576,6 +656,7 @@ jobs:
                   operador: _operadorController.text.trim(),
                   signatureBytes: signatureBytes,
                   logoBytes: _logoBytes,
+                  apenasSegundaVia: false,
                 );
 
                 setState(() {
@@ -586,6 +667,28 @@ jobs:
                   _signatureController.clear();
                 });
               }
+            }
+
+            void _imprimirSegundaVia(Map<String, dynamic> r) {
+              Uint8List? sig;
+              if (r['assinatura'] != null) {
+                sig = base64Decode(r['assinatura']);
+              }
+              PdfGenerator.gerarECompartilhar(
+                context: context,
+                numeroRecibo: r['numero'],
+                emitente: r['emitente'] ?? _emitenteController.text,
+                documentoEmitente: r['docEmitente'] ?? _docEmitenteController.text,
+                pagador: r['pagador'],
+                documentoPagador: r['docPagador'],
+                valor: r['valor'],
+                referente: r['referente'],
+                data: r['data'],
+                operador: r['operador'] ?? '',
+                signatureBytes: sig,
+                logoBytes: _logoBytes,
+                apenasSegundaVia: true,
+              );
             }
 
             void _abrirWhatsApp() async {
@@ -640,17 +743,17 @@ jobs:
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       TextFormField(
                         controller: _operadorController,
                         decoration: const InputDecoration(
-                          labelText: 'Nome do Operador / Vendedor *',
+                          labelText: 'Operador / Emitente Responsável *',
                           prefixIcon: Icon(Icons.badge_outlined),
                           helperText: 'Obrigatório para emissão',
                         ),
                         validator: (v) => v!.trim().isEmpty ? 'Informe o nome do operador' : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       const Text("Dados do Pagador (Cliente)", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
                       const SizedBox(height: 8),
                       TextFormField(
@@ -665,7 +768,7 @@ jobs:
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Informe o documento' : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       const Text("Detalhes do Pagamento", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
                       const SizedBox(height: 8),
                       TextFormField(
@@ -678,10 +781,10 @@ jobs:
                       TextFormField(
                         controller: _referenteController,
                         maxLines: 2,
-                        decoration: const InputDecoration(labelText: 'Referente a...', prefixIcon: Icon(Icons.description)),
+                        decoration: const InputDecoration(labelText: 'Referente ao pagamento de...', prefixIcon: Icon(Icons.description)),
                         validator: (v) => v!.isEmpty ? 'Informe a descrição' : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -705,12 +808,12 @@ jobs:
                           child: Signature(controller: _signatureController, height: 120, backgroundColor: Colors.white),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 18),
                       ElevatedButton.icon(
                         onPressed: _emitirRecibo,
-                        icon: const Icon(Icons.picture_as_pdf),
+                        icon: const Icon(Icons.print),
                         label: Text(
-                          _editingReciboIndex != null ? 'SALVAR E REEMITIR RECIBO' : 'GERAR 1ª E 2ª VIA EM PDF',
+                          _editingReciboIndex != null ? 'SALVAR E REEMITIR' : 'GERAR 1ª E 2ª VIA EM PDF',
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -730,7 +833,8 @@ jobs:
               final query = _buscaReciboController.text.toLowerCase();
               final filtrados = _recibosSalvos.where((r) {
                 final nome = (r['pagador'] ?? '').toString().toLowerCase();
-                return nome.contains(query);
+                final num = (r['numero'] ?? '').toString().toLowerCase();
+                return nome.contains(query) || num.contains(query);
               }).toList();
 
               return Column(
@@ -740,7 +844,7 @@ jobs:
                     child: TextField(
                       controller: _buscaReciboController,
                       decoration: InputDecoration(
-                        hintText: 'Pesquisar recibo por nome...',
+                        hintText: 'Pesquisar por cliente ou nº do recibo...',
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: _buscaReciboController.text.isNotEmpty
                             ? IconButton(
@@ -757,7 +861,7 @@ jobs:
                   ),
                   Expanded(
                     child: filtrados.isEmpty
-                        ? const Center(child: Text("Nenhum recibo encontrado.", style: TextStyle(color: Colors.grey)))
+                        ? const Center(child: Text("Nenhum recibo arquivado.", style: TextStyle(color: Colors.grey)))
                         : ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             itemCount: filtrados.length,
@@ -767,50 +871,48 @@ jobs:
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 10),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                child: ListTile(
-                                  title: Text("${r['pagador']} (R\$ ${r['valor']})", style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  subtitle: Text("Nº ${r['numero']} • ${r['data']}\nOperador: ${r['operador'] ?? 'Geral'}\n${r['referente']}"),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.amber),
-                                        tooltip: 'Editar',
-                                        onPressed: () => _carregarReciboParaEdicao(realIndex),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text("Nº ${r['numero']} • ${r['data']}",
+                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
+                                          Text("R\$ ${r['valor']}",
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green)),
+                                        ],
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.share, color: Colors.indigo),
-                                        tooltip: 'Compartilhar',
-                                        onPressed: () {
-                                          Uint8List? sig;
-                                          if (r['assinatura'] != null) {
-                                            sig = base64Decode(r['assinatura']);
-                                          }
-                                          PdfGenerator.gerarECompartilhar(
-                                            context: context,
-                                            numeroRecibo: r['numero'],
-                                            emitente: r['emitente'],
-                                            documentoEmitente: r['docEmitente'],
-                                            pagador: r['pagador'],
-                                            documentoPagador: r['docPagador'],
-                                            valor: r['valor'],
-                                            referente: r['referente'],
-                                            data: r['data'],
-                                            operador: r['operador'] ?? '',
-                                            signatureBytes: sig,
-                                            logoBytes: _logoBytes,
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                        tooltip: 'Excluir',
-                                        onPressed: () async {
-                                          final prefs = await SharedPreferences.getInstance();
-                                          _recibosSalvos.removeAt(realIndex);
-                                          await prefs.setString('historico_recibos', jsonEncode(_recibosSalvos));
-                                          setState(() {});
-                                        },
+                                      const SizedBox(height: 4),
+                                      Text("Cliente: ${r['pagador']}", style: const TextStyle(fontWeight: FontWeight.w600)),
+                                      Text("Referente: ${r['referente']}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                      const Divider(height: 16),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          TextButton.icon(
+                                            icon: const Icon(Icons.print_outlined, size: 18, color: Colors.indigo),
+                                            label: const Text("Imprimir 2ª Via", style: TextStyle(color: Colors.indigo)),
+                                            onPressed: () => _imprimirSegundaVia(r),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.edit_note, color: Colors.amber),
+                                            tooltip: 'Editar Recibo',
+                                            onPressed: () => _carregarReciboParaEdicao(realIndex),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                            tooltip: 'Excluir',
+                                            onPressed: () async {
+                                              final prefs = await SharedPreferences.getInstance();
+                                              _recibosSalvos.removeAt(realIndex);
+                                              await prefs.setString('historico_recibos', jsonEncode(_recibosSalvos));
+                                              setState(() {});
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -840,7 +942,7 @@ jobs:
                           child: TextField(
                             controller: _buscaClienteController,
                             decoration: InputDecoration(
-                              hintText: 'Buscar cliente por nome (A-Z)...',
+                              hintText: 'Buscar cliente cadastrado (A-Z)...',
                               prefixIcon: const Icon(Icons.search),
                               suffixIcon: _buscaClienteController.text.isNotEmpty
                                   ? IconButton(
@@ -892,7 +994,7 @@ jobs:
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.receipt, color: Colors.indigo),
+                                        icon: const Icon(Icons.receipt_long, color: Colors.indigo),
                                         tooltip: 'Preencher Recibo',
                                         onPressed: () => _preencherReciboComCliente(c),
                                       ),
