@@ -34,9 +34,9 @@ jobs:
         run: |
           cat << 'EOF' > pubspec.yaml
           name: recibo_pro
-          description: "Aplicativo de Recibos Digitais"
+          description: "Aplicativo Moderno de Recibos Digitais"
           publish_to: 'none'
-          version: 1.0.0+1
+          version: 2.0.0+2
 
           environment:
             sdk: '>=3.0.0 <4.0.0'
@@ -48,6 +48,9 @@ jobs:
             printing: ^5.13.1
             intl: ^0.19.0
             signature: ^5.4.1
+            shared_preferences: ^2.2.3
+            image_picker: ^1.1.2
+            url_launcher: ^6.3.0
 
           dev_dependencies:
             flutter_test:
@@ -80,127 +83,132 @@ jobs:
               required String referente,
               required String data,
               Uint8List? signatureBytes,
+              Uint8List? logoBytes,
             }) async {
               final pdf = pw.Document();
 
-              pdf.addPage(
-                pw.Page(
-                  pageFormat: PdfPageFormat.a4,
-                  build: (pw.Context context) {
-                    return pw.Container(
-                      padding: const pw.EdgeInsets.all(24),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(color: PdfColors.blueGrey800, width: 2),
-                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
-                      ),
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+              pw.Widget buildVia(String viaTitulo) {
+                return pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.blueGrey800, width: 1.5),
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: pw.CrossAxisAlignment.center,
                         children: [
-                          pw.Row(
-                            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                            children: [
-                              pw.Column(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                children: [
-                                  pw.Text(
-                                    "RECIBO DE PAGAMENTO",
-                                    style: pw.TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: pw.FontWeight.bold,
-                                      color: PdfColors.blueGrey900,
-                                    ),
-                                  ),
-                                  pw.Text("Nº: $numeroRecibo",
-                                      style: const pw.TextStyle(fontSize: 12)),
-                                ],
-                              ),
-                              pw.Container(
-                                padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                decoration: const pw.BoxDecoration(
-                                  color: PdfColors.grey200,
-                                  borderRadius:
-                                      pw.BorderRadius.all(pw.Radius.circular(4)),
-                                ),
-                                child: pw.Text(
-                                  "VALOR: R\$ $valor",
+                          if (logoBytes != null)
+                            pw.Container(
+                              width: 60,
+                              height: 60,
+                              margin: const pw.EdgeInsets.only(right: 12),
+                              child: pw.Image(pw.MemoryImage(logoBytes), fit: pw.BoxFit.contain),
+                            ),
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  "RECIBO DE PAGAMENTO",
                                   style: pw.TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.black,
+                                    color: PdfColors.blueGrey900,
                                   ),
                                 ),
+                                pw.Text("Nº: $numeroRecibo  |  $viaTitulo",
+                                    style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700, fontWeight: pw.FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: const pw.BoxDecoration(
+                              color: PdfColors.grey200,
+                              borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
+                            ),
+                            child: pw.Text(
+                              "R\$ $valor",
+                              style: pw.TextStyle(
+                                fontSize: 14,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.black,
                               ),
-                            ],
+                            ),
                           ),
-                          pw.Divider(thickness: 1, height: 32),
-
-                          pw.Paragraph(
-                            text:
-                                "Recebi(emos) de $pagador, inscrito(a) no CPF/CNPJ sob o nº $documentoPagador, a importância de R\$ $valor.",
-                            style: const pw.TextStyle(fontSize: 14, lineSpacing: 1.5),
-                          ),
-                          pw.SizedBox(height: 12),
-                          pw.Paragraph(
-                            text: "Referente a: $referente.",
-                            style: const pw.TextStyle(fontSize: 14, lineSpacing: 1.5),
-                          ),
-                          pw.SizedBox(height: 12),
-                          pw.Paragraph(
-                            text:
-                                "Para clareza e firmeza do que foi acordado, firmo(amos) o presente recibo dando plena e geral quitação.",
-                            style: const pw.TextStyle(fontSize: 12, lineSpacing: 1.4),
-                          ),
-
-                          pw.Spacer(),
-
-                          pw.Row(
-                            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                        ],
+                      ),
+                      pw.Divider(thickness: 0.8, height: 16),
+                      pw.Paragraph(
+                        text: "Recebi(emos) de $pagador, CPF/CNPJ: $documentoPagador, a quantia de R\$ $valor.",
+                        style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
+                      ),
+                      pw.Paragraph(
+                        text: "Referente a: $referente.",
+                        style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
+                      ),
+                      pw.Paragraph(
+                        text: "Para clareza e firmeza do acordado, firmo(amos) a quitação do valor.",
+                        style: const pw.TextStyle(fontSize: 9, lineSpacing: 1.2, color: PdfColors.grey800),
+                      ),
+                      pw.SizedBox(height: 12),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: pw.CrossAxisAlignment.end,
+                        children: [
+                          pw.Text("Data: $data", style: const pw.TextStyle(fontSize: 10)),
+                          pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.center,
                             children: [
-                              pw.Column(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                children: [
-                                  pw.Text("Data: $data",
-                                      style: const pw.TextStyle(fontSize: 12)),
-                                ],
+                              if (signatureBytes != null)
+                                pw.Container(
+                                  height: 40,
+                                  width: 140,
+                                  child: pw.Image(pw.MemoryImage(signatureBytes), fit: pw.BoxFit.contain),
+                                )
+                              else
+                                pw.SizedBox(height: 40),
+                              pw.Container(
+                                width: 170,
+                                decoration: const pw.BoxDecoration(
+                                  border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8)),
+                                ),
                               ),
-                              pw.Column(
-                                children: [
-                                  if (signatureBytes != null)
-                                    pw.Container(
-                                      height: 60,
-                                      width: 180,
-                                      child: pw.Image(
-                                        pw.MemoryImage(signatureBytes),
-                                        fit: pw.BoxFit.contain,
-                                      ),
-                                    )
-                                  else
-                                    pw.SizedBox(height: 60),
-
-                                  pw.Container(
-                                    width: 220,
-                                    decoration: const pw.BoxDecoration(
-                                      border: pw.Border(
-                                        bottom: pw.BorderSide(
-                                            color: PdfColors.black, width: 1),
-                                      ),
-                                    ),
-                                  ),
-                                  pw.SizedBox(height: 6),
-                                  pw.Text(emitente,
-                                      style: pw.TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: pw.FontWeight.bold)),
-                                  pw.Text("Doc: $documentoEmitente",
-                                      style: const pw.TextStyle(fontSize: 10)),
-                                ],
-                              ),
+                              pw.SizedBox(height: 3),
+                              pw.Text(emitente, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                              pw.Text("Doc: $documentoEmitente", style: const pw.TextStyle(fontSize: 8)),
                             ],
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                );
+              }
+
+              pdf.addPage(
+                pw.Page(
+                  pageFormat: PdfPageFormat.a4,
+                  margin: const pw.EdgeInsets.all(20),
+                  build: (pw.Context context) {
+                    return pw.Column(
+                      children: [
+                        buildVia("1ª VIA - CLIENTE"),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.symmetric(vertical: 14),
+                          child: pw.Row(
+                            children: [
+                              const pw.Text("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+                                style: pw.TextStyle(color: PdfColors.grey500, fontSize: 8)),
+                            ],
+                          ),
+                        ),
+                        buildVia("2ª VIA - EMPRESA"),
+                      ],
                     );
                   },
                 ),
@@ -217,16 +225,20 @@ jobs:
       - name: Escrever lib/main.dart
         run: |
           cat << 'EOF' > lib/main.dart
+          import 'dart:convert';
           import 'dart:typed_data';
           import 'package:flutter/material.dart';
           import 'package:intl/intl.dart';
           import 'package:signature/signature.dart';
+          import 'package:shared_preferences/shared_preferences.dart';
+          import 'package:image_picker/image_picker.dart';
+          import 'package:url_launcher/url_launcher.dart';
           import 'pdf_generator.dart';
 
-          void main() => runApp(const ReciboApp());
+          void main() => runApp(const ReciboProApp());
 
-          class ReciboApp extends StatelessWidget {
-            const ReciboApp({super.key});
+          class ReciboProApp extends StatelessWidget {
+            const ReciboProApp({super.key});
 
             @override
             Widget build(BuildContext context) {
@@ -234,27 +246,42 @@ jobs:
                 title: 'Recibo Pro',
                 debugShowCheckedModeBanner: false,
                 theme: ThemeData(
-                  colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
                   useMaterial3: true,
-                  inputDecorationTheme: const InputDecorationTheme(
-                    border: OutlineInputBorder(),
+                  colorSchemeSeed: Colors.indigo,
+                  scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+                  appBarTheme: const AppBarTheme(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    centerTitle: true,
+                  ),
+                  inputDecorationTheme: InputDecorationTheme(
                     filled: true,
                     fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                    ),
                   ),
                 ),
-                home: const ReciboFormScreen(),
+                home: const HomeScreen(),
               );
             }
           }
 
-          class ReciboFormScreen extends StatefulWidget {
-            const ReciboFormScreen({super.key});
+          class HomeScreen extends StatefulWidget {
+            const HomeScreen({super.key});
 
             @override
-            State<ReciboFormScreen> createState() => _ReciboFormScreenState();
+            State<HomeScreen> createState() => _HomeScreenState();
           }
 
-          class _ReciboFormScreenState extends State<ReciboFormScreen> {
+          class _HomeScreenState extends State<HomeScreen> {
+            int _currentIndex = 0;
             final _formKey = GlobalKey<FormState>();
 
             final _emitenteController = TextEditingController();
@@ -267,6 +294,8 @@ jobs:
             late SignatureController _signatureController;
             String _dataAtual = '';
             String _numRecibo = '';
+            Uint8List? _logoBytes;
+            List<Map<String, dynamic>> _recibosSalvos = [];
 
             @override
             void initState() {
@@ -275,9 +304,11 @@ jobs:
               _numRecibo = DateTime.now().millisecondsSinceEpoch.toString().substring(7);
               _signatureController = SignatureController(
                 penStrokeWidth: 3,
-                penColor: Colors.black,
+                penColor: Colors.indigo.shade900,
                 exportBackgroundColor: Colors.transparent,
               );
+              _carregarDadosEmpresa();
+              _carregarRecibos();
             }
 
             @override
@@ -286,12 +317,89 @@ jobs:
               super.dispose();
             }
 
+            Future<void> _carregarDadosEmpresa() async {
+              final prefs = await SharedPreferences.getInstance();
+              setState(() {
+                _emitenteController.text = prefs.getString('empresa_nome') ?? '';
+                _docEmitenteController.text = prefs.getString('empresa_doc') ?? '';
+                final logoBase64 = prefs.getString('empresa_logo');
+                if (logoBase64 != null) {
+                  _logoBytes = base64Decode(logoBase64);
+                }
+              });
+            }
+
+            Future<void> _salvarDadosEmpresa() async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('empresa_nome', _emitenteController.text);
+              await prefs.setString('empresa_doc', _docEmitenteController.text);
+              if (_logoBytes != null) {
+                await prefs.setString('empresa_logo', base64Encode(_logoBytes!));
+              }
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Dados da empresa salvos com sucesso!')),
+              );
+            }
+
+            Future<void> _selecionarLogo() async {
+              final picker = ImagePicker();
+              final picked = await picker.pickImage(source: ImageSource.gallery);
+              if (picked != null) {
+                final bytes = await picked.readAsBytes();
+                setState(() {
+                  _logoBytes = bytes;
+                });
+                _salvarDadosEmpresa();
+              }
+            }
+
+            Future<void> _carregarRecibos() async {
+              final prefs = await SharedPreferences.getInstance();
+              final raw = prefs.getString('historico_recibos');
+              if (raw != null) {
+                final List decoded = jsonDecode(raw);
+                setState(() {
+                  _recibosSalvos = decoded.cast<Map<String, dynamic>>();
+                });
+              }
+            }
+
+            Future<void> _salvarReciboNoHistorico(Map<String, dynamic> novoRecibo) async {
+              final prefs = await SharedPreferences.getInstance();
+              _recibosSalvos.insert(0, novoRecibo);
+              await prefs.setString('historico_recibos', jsonEncode(_recibosSalvos));
+              setState(() {});
+            }
+
+            Future<void> _excluirRecibo(int index) async {
+              final prefs = await SharedPreferences.getInstance();
+              _recibosSalvos.removeAt(index);
+              await prefs.setString('historico_recibos', jsonEncode(_recibosSalvos));
+              setState(() {});
+            }
+
             Future<void> _emitirRecibo() async {
               if (_formKey.currentState!.validate()) {
                 Uint8List? signatureBytes;
                 if (_signatureController.isNotEmpty) {
                   signatureBytes = await _signatureController.toPngBytes();
                 }
+
+                final dadosRecibo = {
+                  'numero': _numRecibo,
+                  'data': _dataAtual,
+                  'emitente': _emitenteController.text,
+                  'docEmitente': _docEmitenteController.text,
+                  'pagador': _pagadorController.text,
+                  'docPagador': _docPagadorController.text,
+                  'valor': _valorController.text,
+                  'referente': _referenteController.text,
+                  'assinatura': signatureBytes != null ? base64Encode(signatureBytes) : null,
+                };
+
+                await _salvarReciboNoHistorico(dadosRecibo);
+
                 if (!mounted) return;
 
                 await PdfGenerator.gerarECompartilhar(
@@ -305,133 +413,321 @@ jobs:
                   referente: _referenteController.text,
                   data: _dataAtual,
                   signatureBytes: signatureBytes,
+                  logoBytes: _logoBytes,
                 );
+
+                setState(() {
+                  _numRecibo = DateTime.now().millisecondsSinceEpoch.toString().substring(7);
+                  _pagadorController.clear();
+                  _docPagadorController.clear();
+                  _valorController.clear();
+                  _referenteController.clear();
+                  _signatureController.clear();
+                });
               }
+            }
+
+            void _abrirWhatsApp() async {
+              final uri = Uri.parse("https://wa.me/5521974623033?text=Ol%C3%A1%20Robson%2C%20estou%20usando%20o%20Recibo%20Pro!");
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            }
+
+            void _abrirEmail() async {
+              final uri = Uri.parse("mailto:robson.cadete@gmail.com?subject=Contato%20Recibo%20Pro");
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+              }
+            }
+
+            Widget _buildFormAba() {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Recibo Nº $_numRecibo", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.indigo)),
+                            Row(
+                              children: [
+                                const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                                const SizedBox(width: 6),
+                                Text(_dataAtual, style: const TextStyle(color: Colors.black800)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text("Dados do Pagador (Cliente)", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _pagadorController,
+                        decoration: const InputDecoration(labelText: 'Nome do Cliente', prefixIcon: Icon(Icons.person)),
+                        validator: (v) => v!.isEmpty ? 'Informe o nome' : null,
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _docPagadorController,
+                        decoration: const InputDecoration(labelText: 'CPF / CNPJ do Cliente', prefixIcon: Icon(Icons.badge)),
+                        keyboardType: TextInputType.number,
+                        validator: (v) => v!.isEmpty ? 'Informe o documento' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text("Detalhes do Pagamento", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _valorController,
+                        decoration: const InputDecoration(labelText: 'Valor Total', prefixText: 'R\$ ', prefixIcon: Icon(Icons.attach_money)),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        validator: (v) => v!.isEmpty ? 'Informe o valor' : null,
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _referenteController,
+                        maxLines: 2,
+                        decoration: const InputDecoration(labelText: 'Referente ao serviço / venda...', prefixIcon: Icon(Icons.description)),
+                        validator: (v) => v!.isEmpty ? 'Informe a descrição' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Assinatura Digital", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                          TextButton.icon(
+                            onPressed: () => _signatureController.clear(),
+                            icon: const Icon(Icons.clear, size: 16),
+                            label: const Text('Limpar'),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        height: 130,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Signature(controller: _signatureController, height: 130, backgroundColor: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: _emitirRecibo,
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: const Text('GERAR 1ª E 2ª VIA EM PDF', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            Widget _buildHistoricoAba() {
+              if (_recibosSalvos.isEmpty) {
+                return const Center(child: Text("Nenhum recibo salvo ainda.", style: TextStyle(color: Colors.grey, fontSize: 16)));
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _recibosSalvos.length,
+                itemBuilder: (context, index) {
+                  final r = _recibosSalvos[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      title: Text("${r['pagador']} (R\$ ${r['valor']})", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text("Nº ${r['numero']} • ${r['data']}\n${r['referente']}"),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.share, color: Colors.indigo),
+                            onPressed: () {
+                              Uint8List? sig;
+                              if (r['assinatura'] != null) {
+                                sig = base64Decode(r['assinatura']);
+                              }
+                              PdfGenerator.gerarECompartilhar(
+                                context: context,
+                                numeroRecibo: r['numero'],
+                                emitente: r['emitente'],
+                                documentoEmitente: r['docEmitente'],
+                                pagador: r['pagador'],
+                                documentoPagador: r['docPagador'],
+                                valor: r['valor'],
+                                referente: r['referente'],
+                                data: r['data'],
+                                signatureBytes: sig,
+                                logoBytes: _logoBytes,
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            onPressed: () => _excluirRecibo(index),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+
+            Widget _buildConfigAba() {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Dados da Empresa / Emitente", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo)),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _emitenteController,
+                              decoration: const InputDecoration(labelText: 'Nome da Empresa / Profissional', prefixIcon: Icon(Icons.business)),
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _docEmitenteController,
+                              decoration: const InputDecoration(labelText: 'CNPJ / CPF do Emitente', prefixIcon: Icon(Icons.badge)),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                if (_logoBytes != null)
+                                  Container(
+                                    width: 60,
+                                    height: 60,
+                                    margin: const EdgeInsets.only(right: 12),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.grey.shade300),
+                                      image: DecorationImage(image: MemoryImage(_logoBytes!), fit: BoxFit.contain),
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: _selecionarLogo,
+                                    icon: const Icon(Icons.image),
+                                    label: Text(_logoBytes == null ? 'Adicionar Logo' : 'Alterar Logo'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _salvarDadosEmpresa,
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+                              child: const Text('Salvar Dados da Empresa'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                      color: Colors.indigo.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.code, color: Colors.indigo),
+                                SizedBox(width: 8),
+                                Text("Desenvolvedor", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo)),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            const Text("Robson Cadete", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 4),
+                            const Text("E-mail: robson.cadete@gmail.com"),
+                            const Text("Telefone: (21) 97462-3033"),
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: _abrirWhatsApp,
+                                    icon: const Icon(Icons.chat),
+                                    label: const Text("WhatsApp"),
+                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF25D366), foregroundColor: Colors.white),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: _abrirEmail,
+                                    icon: const Icon(Icons.email),
+                                    label: const Text("E-mail"),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
             }
 
             @override
             Widget build(BuildContext context) {
               return Scaffold(
-                backgroundColor: Colors.grey[100],
-                appBar: AppBar(title: const Text('Novo Recibo Digital'), centerTitle: true),
-                body: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("Recibo Nº: $_numRecibo",
-                                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                                Text("Data: $_dataAtual"),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text("Dados do Emitente",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _emitenteController,
-                          decoration: const InputDecoration(labelText: 'Seu Nome / Razão Social'),
-                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _docEmitenteController,
-                          decoration: const InputDecoration(labelText: 'Seu CPF / CNPJ'),
-                          keyboardType: TextInputType.number,
-                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-                        ),
-                        const SizedBox(height: 20),
-                        const Text("Dados do Pagador",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _pagadorController,
-                          decoration: const InputDecoration(labelText: 'Nome do Cliente'),
-                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _docPagadorController,
-                          decoration: const InputDecoration(labelText: 'CPF / CNPJ do Cliente'),
-                          keyboardType: TextInputType.number,
-                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-                        ),
-                        const SizedBox(height: 20),
-                        const Text("Detalhes do Pagamento",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _valorController,
-                          decoration: const InputDecoration(labelText: 'Valor (R\$)', prefixText: 'R\$ '),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _referenteController,
-                          maxLines: 3,
-                          decoration: const InputDecoration(labelText: 'Referente a...'),
-                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("Assinatura na Tela",
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            TextButton.icon(
-                              onPressed: () => _signatureController.clear(),
-                              icon: const Icon(Icons.clear, size: 18),
-                              label: const Text('Limpar'),
-                            ),
-                          ],
-                        ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Colors.grey.shade400),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Signature(
-                              controller: _signatureController,
-                              height: 140,
-                              backgroundColor: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: _emitirRecibo,
-                          icon: const Icon(Icons.picture_as_pdf),
-                          label: const Text('GERAR E COMPARTILHAR PDF',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueGrey[800],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                appBar: AppBar(
+                  title: const Text('Recibo Pro'),
+                ),
+                body: IndexedStack(
+                  index: _currentIndex,
+                  children: [
+                    _buildFormAba(),
+                    _buildHistoricoAba(),
+                    _buildConfigAba(),
+                  ],
+                ),
+                bottomNavigationBar: NavigationBar(
+                  selectedIndex: _currentIndex,
+                  onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
+                  destinations: const [
+                    NavigationDestination(icon: Icon(Icons.receipt_long), label: 'Emitir'),
+                    NavigationDestination(icon: Icon(Icons.history), label: 'Salvos'),
+                    NavigationDestination(icon: Icon(Icons.settings), label: 'Empresa'),
+                  ],
                 ),
               );
             }
