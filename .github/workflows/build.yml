@@ -27,7 +27,8 @@ jobs:
           cache: true
 
       - name: Gerar esqueleto Android
-        run: flutter create --platforms=android --org com.recibo.pro .
+        run: |
+          flutter create --project-name recibo_pro --platforms=android --org com.recibo.pro .
 
       - name: Baixar dependencias
         run: flutter pub get
