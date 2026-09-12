@@ -30,16 +30,19 @@ jobs:
         run: |
           flutter create --project-name recibo_pro --platforms=android --org com.recibo.pro .
 
-      - name: Ajustar Android compileSdk 35 e Kotlin atualizado
+      - name: Ajustar Android compileSdk 35, Kotlin e AAPT2
         run: |
-          # Atualiza compileSdk para 35 e targetSdk para 35 no app/build.gradle
+          # Define compileSdk e targetSdk para 35
           sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 35/g' android/app/build.gradle || true
           sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle || true
           sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk = 35/g' android/app/build.gradle || true
           sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 35/g' android/app/build.gradle || true
           
-          # Atualiza a versao do plugin do Kotlin para 1.9.24 no settings.gradle
+          # Atualiza a versao do plugin do Kotlin para 1.9.24
           sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.24"/g' android/settings.gradle || true
+
+          # Forca a versao do AAPT2 compativel com as tabelas de recursos do Android 35
+          echo "android.aapt2Version=8.6.1-11315950" >> android/gradle.properties
 
       - name: Escrever pubspec.yaml
         run: |
