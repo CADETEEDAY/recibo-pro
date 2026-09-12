@@ -10,8 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar codigo
+      - name: Baixar codigo do repositorio
         uses: actions/checkout@v4
+
+      - name: Salvar arquivos do Recibo
+        run: |
+          mkdir -p /tmp/recibo_backup
+          cp -r lib /tmp/recibo_backup/
+          cp pubspec.yaml /tmp/recibo_backup/
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
@@ -26,14 +32,19 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Gerar esqueleto Android
+      - name: Gerar estrutura nativa Android
         run: |
           flutter create --project-name recibo_pro --platforms=android --org com.recibo.pro .
+
+      - name: Restaurar arquivos do Recibo Pro
+        run: |
+          cp -rf /tmp/recibo_backup/lib .
+          cp -f /tmp/recibo_backup/pubspec.yaml .
 
       - name: Baixar dependencias
         run: flutter pub get
 
-      - name: Compilar APK
+      - name: Compilar APK do Recibo Pro
         run: flutter build apk --release --no-tree-shake-icons
 
       - name: Salvar APK para Download
