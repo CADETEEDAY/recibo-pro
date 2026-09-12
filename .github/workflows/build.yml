@@ -10,14 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar codigo do repositorio
+      - name: Baixar repositorio
         uses: actions/checkout@v4
-
-      - name: Salvar arquivos do Recibo
-        run: |
-          mkdir -p /tmp/recibo_backup
-          cp -r lib /tmp/recibo_backup/
-          cp pubspec.yaml /tmp/recibo_backup/
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
@@ -32,14 +26,417 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Gerar estrutura nativa Android
+      - name: Criar base do projeto
         run: |
           flutter create --project-name recibo_pro --platforms=android --org com.recibo.pro .
 
-      - name: Restaurar arquivos do Recibo Pro
+      - name: Escrever pubspec.yaml
         run: |
-          cp -rf /tmp/recibo_backup/lib .
-          cp -f /tmp/recibo_backup/pubspec.yaml .
+          cat << 'EOF' > pubspec.yaml
+          name: recibo_pro
+          description: "Aplicativo de Recibos Digitais"
+          publish_to: 'none'
+          version: 1.0.0+1
+
+          environment:
+            sdk: '>=3.0.0 <4.0.0'
+
+          dependencies:
+            flutter:
+              sdk: flutter
+            pdf: ^3.10.8
+            printing: ^5.13.1
+            intl: ^0.19.0
+            signature: ^5.4.1
+
+          dev_dependencies:
+            flutter_test:
+              sdk: flutter
+            flutter_lints: ^3.0.0
+
+          flutter:
+            uses-material-design: true
+          EOF
+
+      - name: Escrever lib/pdf_generator.dart
+        run: |
+          mkdir -p lib
+          cat << 'EOF' > lib/pdf_generator.dart
+          import 'dart:typed_data';
+          import 'package:flutter/material.dart';
+          import 'package:pdf/pdf.dart';
+          import 'package:pdf/widgets.dart' as pw;
+          import 'package:printing/printing.dart';
+
+          class PdfGenerator {
+            static Future<void> gerarECompartilhar({
+              required BuildContext context,
+              required String numeroRecibo,
+              required String emitente,
+              required String documentoEmitente,
+              required String pagador,
+              required String documentoPagador,
+              required String valor,
+              required String referente,
+              required String data,
+              Uint8List? signatureBytes,
+            }) async {
+              final pdf = pw.Document();
+
+              pdf.addPage(
+                pw.Page(
+                  pageFormat: PdfPageFormat.a4,
+                  build: (pw.Context context) {
+                    return pw.Container(
+                      padding: const pw.EdgeInsets.all(24),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(color: PdfColors.blueGrey800, width: 2),
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                      ),
+                      child: pw.Column(
+                        cross: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                            children: [
+                              pw.Column(
+                                cross: pw.CrossAxisAlignment.start,
+                                children: [
+                                  pw.Text(
+                                    "RECIBO DE PAGAMENTO",
+                                    style: pw.TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: pw.FontWeight.bold,
+                                      color: PdfColors.blueGrey900,
+                                    ),
+                                  ),
+                                  pw.Text("Nº: $numeroRecibo",
+                                      style: const pw.TextStyle(fontSize: 12)),
+                                ],
+                              ),
+                              pw.Container(
+                                padding: const pw.EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                decoration: const pw.BoxDecoration(
+                                  color: PdfColors.grey200,
+                                  borderRadius:
+                                      pw.BorderRadius.all(pw.Radius.circular(4)),
+                                ),
+                                child: pw.Text(
+                                  "VALOR: R\$ $valor",
+                                  style: pw.TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          pw.Divider(thickness: 1, height: 32),
+
+                          pw.Paragraph(
+                            text:
+                                "Recebi(emos) de $pagador, inscrito(a) no CPF/CNPJ sob o nº $documentoPagador, a importância de R\$ $valor.",
+                            style: const pw.TextStyle(fontSize: 14, lineSpacing: 1.5),
+                          ),
+                          pw.SizedBox(height: 12),
+                          pw.Paragraph(
+                            text: "Referente a: $referente.",
+                            style: const pw.TextStyle(fontSize: 14, lineSpacing: 1.5),
+                          ),
+                          pw.SizedBox(height: 12),
+                          pw.Paragraph(
+                            text:
+                                "Para clareza e firmeza do que foi acordado, firmo(amos) o presente recibo dando plena e geral quitação.",
+                            style: const pw.TextStyle(fontSize: 12, lineSpacing: 1.4),
+                          ),
+
+                          pw.Spacer(),
+
+                          pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                            children: [
+                              pw.Column(
+                                cross: pw.CrossAxisAlignment.start,
+                                children: [
+                                  pw.Text("Data: $data",
+                                      style: const pw.TextStyle(fontSize: 12)),
+                                ],
+                              ),
+                              pw.Column(
+                                children: [
+                                  if (signatureBytes != null)
+                                    pw.Container(
+                                      height: 60,
+                                      width: 180,
+                                      child: pw.Image(
+                                        pw.MemoryImage(signatureBytes),
+                                        fit: pw.BoxFit.contain,
+                                      ),
+                                    )
+                                  else
+                                    pw.SizedBox(height: 60),
+
+                                  pw.Container(
+                                    width: 220,
+                                    decoration: const pw.BoxDecoration(
+                                      border: pw.Border(
+                                        bottom: pw.BorderSide(
+                                            color: PdfColors.black, width: 1),
+                                      ),
+                                    ),
+                                  ),
+                                  pw.SizedBox(height: 6),
+                                  pw.Text(emitente,
+                                      style: pw.TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: pw.FontWeight.bold)),
+                                  pw.Text("Doc: $documentoEmitente",
+                                      style: const pw.TextStyle(fontSize: 10)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+
+              await Printing.sharePdf(
+                bytes: await pdf.save(),
+                filename: 'recibo_$numeroRecibo.pdf',
+              );
+            }
+          }
+          EOF
+
+      - name: Escrever lib/main.dart
+        run: |
+          cat << 'EOF' > lib/main.dart
+          import 'dart:typed_data';
+          import 'package:flutter/material.dart';
+          import 'package:intl/intl.dart';
+          import 'package:signature/signature.dart';
+          import 'pdf_generator.dart';
+
+          void main() => runApp(const ReciboApp());
+
+          class ReciboApp extends StatelessWidget {
+            const ReciboApp({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return MaterialApp(
+                title: 'Recibo Pro',
+                debugShowCheckedModeBanner: false,
+                theme: ThemeData(
+                  colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
+                  useMaterial3: true,
+                  inputDecorationTheme: const InputDecorationTheme(
+                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+                home: const ReciboFormScreen(),
+              );
+            }
+          }
+
+          class ReciboFormScreen extends StatefulWidget {
+            const ReciboFormScreen({super.key});
+
+            @override
+            State<ReciboFormScreen> createState() => _ReciboFormScreenState();
+          }
+
+          class _ReciboFormScreenState extends State<ReciboFormScreen> {
+            final _formKey = GlobalKey<FormState>();
+
+            final _emitenteController = TextEditingController();
+            final _docEmitenteController = TextEditingController();
+            final _pagadorController = TextEditingController();
+            final _docPagadorController = TextEditingController();
+            final _valorController = TextEditingController();
+            final _referenteController = TextEditingController();
+
+            late SignatureController _signatureController;
+            String _dataAtual = '';
+            String _numRecibo = '';
+
+            @override
+            void initState() {
+              super.initState();
+              _dataAtual = DateFormat('dd/MM/yyyy').format(DateTime.now());
+              _numRecibo = DateTime.now().millisecondsSinceEpoch.toString().substring(7);
+              _signatureController = SignatureController(
+                penStrokeWidth: 3,
+                penColor: Colors.black,
+                exportBackgroundColor: Colors.transparent,
+              );
+            }
+
+            @override
+            void dispose() {
+              _signatureController.dispose();
+              super.dispose();
+            }
+
+            Future<void> _emitirRecibo() async {
+              if (_formKey.currentState!.validate()) {
+                Uint8List? signatureBytes;
+                if (_signatureController.isNotEmpty) {
+                  signatureBytes = await _signatureController.toPngBytes();
+                }
+                if (!mounted) return;
+
+                await PdfGenerator.gerarECompartilhar(
+                  context: context,
+                  numeroRecibo: _numRecibo,
+                  emitente: _emitenteController.text,
+                  documentoEmitente: _docEmitenteController.text,
+                  pagador: _pagadorController.text,
+                  documentoPagador: _docPagadorController.text,
+                  valor: _valorController.text,
+                  referente: _referenteController.text,
+                  data: _dataAtual,
+                  signatureBytes: signatureBytes,
+                );
+              }
+            }
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.grey[100],
+                appBar: AppBar(title: const Text('Novo Recibo Digital'), centerTitle: true),
+                body: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Recibo Nº: $_numRecibo",
+                                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Text("Data: $_dataAtual"),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text("Dados do Emitente",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _emitenteController,
+                          decoration: const InputDecoration(labelText: 'Seu Nome / Razão Social'),
+                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _docEmitenteController,
+                          decoration: const InputDecoration(labelText: 'Seu CPF / CNPJ'),
+                          keyboardType: TextInputType.number,
+                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text("Dados do Pagador",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _pagadorController,
+                          decoration: const InputDecoration(labelText: 'Nome do Cliente'),
+                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _docPagadorController,
+                          decoration: const InputDecoration(labelText: 'CPF / CNPJ do Cliente'),
+                          keyboardType: TextInputType.number,
+                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text("Detalhes do Pagamento",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _valorController,
+                          decoration: const InputDecoration(labelText: 'Valor (R\$)', prefixText: 'R\$ '),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _referenteController,
+                          maxLines: 3,
+                          decoration: const InputDecoration(labelText: 'Referente a...'),
+                          validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Assinatura na Tela",
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            TextButton.icon(
+                              onPressed: () => _signatureController.clear(),
+                              icon: const Icon(Icons.clear, size: 18),
+                              label: const Text('Limpar'),
+                            ),
+                          ],
+                        ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey.shade400),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Signature(
+                              controller: _signatureController,
+                              height: 140,
+                              backgroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: _emitirRecibo,
+                          icon: const Icon(Icons.picture_as_pdf),
+                          label: const Text('GERAR E COMPARTILHAR PDF',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueGrey[800],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+          }
+          EOF
 
       - name: Baixar dependencias
         run: flutter pub get
