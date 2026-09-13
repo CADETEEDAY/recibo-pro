@@ -45,7 +45,7 @@ jobs:
           name: recibo_pro
           description: "Sistema Avancado de Recibos Digitais Material You"
           publish_to: 'none'
-          version: 2.6.0+8
+          version: 2.7.0+9
 
           environment:
             sdk: '>=3.0.0 <4.0.0'
@@ -1432,7 +1432,7 @@ jobs:
                               ),
                               const SizedBox(width: 10),
                               IconButton.filled(
-                                style: IconButton.filledStyleFrom(
+                                style: IconButton.styleFrom(
                                   backgroundColor: M3Colors.primaryDark,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.all(14),
