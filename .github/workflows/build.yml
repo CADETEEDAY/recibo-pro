@@ -45,7 +45,7 @@ jobs:
           name: recibo_pro
           description: "Sistema Avancado de Recibos Digitais Material You"
           publish_to: 'none'
-          version: 2.4.0+6
+          version: 2.5.0+7
 
           environment:
             sdk: '>=3.0.0 <4.0.0'
@@ -98,16 +98,16 @@ jobs:
             }) async {
               final pdf = pw.Document();
 
-              final primaryColor = PdfColor.fromHex('3B82F6');
-              final darkColor = PdfColor.fromHex('181518');
-              final greenBadge = PdfColor.fromHex('4DC24D');
+              final darkNavy = PdfColor.fromHex('0F172A');
+              final accentEmerald = PdfColor.fromHex('007A4D');
+              final lightBg = PdfColor.fromHex('F8FAFC');
 
               pw.Widget buildViaBlock(String tagVia, {bool isReemissao = false}) {
                 return pw.Container(
-                  padding: const pw.EdgeInsets.all(12),
+                  padding: const pw.EdgeInsets.all(14),
                   decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: darkColor, width: 1.2),
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                    border: pw.Border.all(color: darkNavy, width: 1.2),
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(10)),
                     color: PdfColors.white,
                   ),
                   child: pw.Column(
@@ -121,7 +121,7 @@ jobs:
                             pw.Container(
                               width: 48,
                               height: 48,
-                              margin: const pw.EdgeInsets.only(right: 10),
+                              margin: const pw.EdgeInsets.only(right: 12),
                               child: pw.Image(pw.MemoryImage(logoBytes), fit: pw.BoxFit.contain),
                             ),
                           pw.Expanded(
@@ -133,30 +133,31 @@ jobs:
                                   style: pw.TextStyle(
                                     fontSize: 13,
                                     fontWeight: pw.FontWeight.bold,
-                                    color: darkColor,
+                                    color: darkNavy,
                                   ),
                                 ),
                                 if (documentoEmitente.isNotEmpty)
                                   pw.Text("CNPJ/CPF: $documentoEmitente",
-                                      style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+                                      style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700)),
+                                pw.SizedBox(height: 2),
                                 pw.Row(
                                   children: [
                                     pw.Text("RECIBO Nº: $numeroRecibo",
-                                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                                        style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold, color: darkNavy)),
                                     pw.SizedBox(width: 8),
                                     pw.Container(
-                                      padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                      padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                                       decoration: pw.BoxDecoration(
-                                        color: isReemissao ? PdfColors.amber100 : PdfColors.blue50,
+                                        color: isReemissao ? PdfColors.amber50 : lightBg,
                                         borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
-                                        border: pw.Border.all(color: isReemissao ? PdfColors.amber800 : primaryColor, width: 0.5),
+                                        border: pw.Border.all(color: isReemissao ? PdfColors.amber800 : darkNavy, width: 0.6),
                                       ),
                                       child: pw.Text(
                                         tagVia,
                                         style: pw.TextStyle(
                                           fontSize: 7.5,
                                           fontWeight: pw.FontWeight.bold,
-                                          color: isReemissao ? PdfColors.amber900 : darkColor,
+                                          color: isReemissao ? PdfColors.amber900 : darkNavy,
                                         ),
                                       ),
                                     ),
@@ -166,11 +167,11 @@ jobs:
                             ),
                           ),
                           pw.Container(
-                            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: pw.BoxDecoration(
-                              color: PdfColors.grey100,
-                              border: pw.Border.all(color: PdfColors.grey300, width: 0.8),
-                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                              color: lightBg,
+                              border: pw.Border.all(color: darkNavy, width: 1),
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
                             ),
                             child: pw.Column(
                               crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -179,9 +180,9 @@ jobs:
                                 pw.Text(
                                   "R\$ $valor",
                                   style: pw.TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     fontWeight: pw.FontWeight.bold,
-                                    color: greenBadge,
+                                    color: accentEmerald,
                                   ),
                                 ),
                               ],
@@ -189,41 +190,41 @@ jobs:
                           ),
                         ],
                       ),
-                      pw.Divider(thickness: 0.6, height: 12),
+                      pw.Divider(thickness: 0.8, height: 14),
                       pw.RichText(
                         text: pw.TextSpan(
-                          style: const pw.TextStyle(fontSize: 9.5, lineSpacing: 1.2),
+                          style: const pw.TextStyle(fontSize: 9.5, lineSpacing: 1.3),
                           children: [
                             const pw.TextSpan(text: "Recebemos de "),
                             pw.TextSpan(text: pagador, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                            const pw.TextSpan(text: ", documento CPF/CNPJ nº "),
+                            const pw.TextSpan(text: ", portador do CPF/CNPJ nº "),
                             pw.TextSpan(text: documentoPagador, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                             const pw.TextSpan(text: ", a quantia líquida de "),
-                            pw.TextSpan(text: "R\$ $valor", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                            const pw.TextSpan(text: " correspondente ao pagamento abaixo especificado."),
+                            pw.TextSpan(text: "R\$ $valor", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: accentEmerald)),
+                            const pw.TextSpan(text: " referente aos serviços / produtos discriminados abaixo."),
                           ],
                         ),
                       ),
-                      pw.SizedBox(height: 5),
+                      pw.SizedBox(height: 6),
                       pw.Container(
                         width: double.infinity,
-                        padding: const pw.EdgeInsets.all(6),
+                        padding: const pw.EdgeInsets.all(8),
                         decoration: pw.BoxDecoration(
-                          color: PdfColors.grey50,
+                          color: lightBg,
                           border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
-                          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
                         ),
                         child: pw.Text(
-                          "Referente: $referente",
-                          style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.black),
+                          "Referente a: $referente",
+                          style: const pw.TextStyle(fontSize: 9, color: PdfColors.black),
                         ),
                       ),
                       pw.SizedBox(height: 6),
                       pw.Text(
-                        "Para os devidos fins de direito, firmamos e damos plena e geral quitação.",
+                        "Para os devidos fins de direito, firmamos o presente recibo dando plena quitação.",
                         style: const pw.TextStyle(fontSize: 7.5, color: PdfColors.grey700),
                       ),
-                      pw.SizedBox(height: 8),
+                      pw.SizedBox(height: 10),
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -231,10 +232,9 @@ jobs:
                           pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
-                              pw.Text("Emissão: $data", style: const pw.TextStyle(fontSize: 8)),
+                              pw.Text("Emissão: $data", style: const pw.TextStyle(fontSize: 8.5)),
                               if (operador.isNotEmpty)
-                                pw.Text("Operador: $operador",
-                                    style: pw.TextStyle(fontSize: 7.5, color: PdfColors.grey800, fontStyle: pw.FontStyle.italic)),
+                                pw.Text("Operador: $operador", style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey800)),
                             ],
                           ),
                           pw.Column(
@@ -242,16 +242,16 @@ jobs:
                             children: [
                               if (signatureBytes != null)
                                 pw.Container(
-                                  height: 32,
-                                  width: 120,
+                                  height: 36,
+                                  width: 130,
                                   child: pw.Image(pw.MemoryImage(signatureBytes), fit: pw.BoxFit.contain),
                                 )
                               else
-                                pw.SizedBox(height: 32),
+                                pw.SizedBox(height: 36),
                               pw.Container(
-                                width: 150,
+                                width: 160,
                                 decoration: const pw.BoxDecoration(
-                                  border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.7)),
+                                  border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8)),
                                 ),
                               ),
                               pw.SizedBox(height: 2),
@@ -268,21 +268,15 @@ jobs:
               pdf.addPage(
                 pw.Page(
                   pageFormat: PdfPageFormat.a4,
-                  margin: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  margin: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   build: (pw.Context context) {
                     if (apenasSegundaVia) {
                       return pw.Column(
                         children: [
                           buildViaBlock("2ª VIA - EMPRESA (REEMISSÃO)", isReemissao: true),
                           pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(vertical: 10),
-                            child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.center,
-                              children: [
-                                pw.Text("--- 2ª VIA REEMITIDA PARA ARQUIVO ---",
-                                    style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
-                              ],
-                            ),
+                            padding: const pw.EdgeInsets.symmetric(vertical: 12),
+                            child: pw.Text("--- 2ª VIA ARQUIVADA ---", style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
                           ),
                           buildViaBlock("2ª VIA - CLIENTE (REEMISSÃO)", isReemissao: true),
                         ],
@@ -293,7 +287,7 @@ jobs:
                       children: [
                         buildViaBlock("1ª VIA - CLIENTE"),
                         pw.Padding(
-                          padding: const pw.EdgeInsets.symmetric(vertical: 10),
+                          padding: const pw.EdgeInsets.symmetric(vertical: 14),
                           child: pw.Row(
                             mainAxisAlignment: pw.MainAxisAlignment.center,
                             children: [
@@ -325,6 +319,7 @@ jobs:
           import 'dart:convert';
           import 'dart:typed_data';
           import 'package:flutter/material.dart';
+          import 'package:flutter/services.dart';
           import 'package:intl/intl.dart';
           import 'package:signature/signature.dart';
           import 'package:shared_preferences/shared_preferences.dart';
@@ -332,16 +327,29 @@ jobs:
           import 'package:url_launcher/url_launcher.dart';
           import 'pdf_generator.dart';
 
-          void main() => runApp(const ReciboProApp());
+          void main() {
+            WidgetsFlutterBinding.ensureInitialized();
+            SystemChrome.setSystemUIOverlayStyle(
+              const SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: Brightness.dark,
+              ),
+            );
+            runApp(const ReciboProApp());
+          }
 
-          class ReciboColors {
-            static const skyBlue = Color(0xFF5A9EF3);
-            static const greenPill = Color(0xFF4DC24D);
-            static const darkPill = Color(0xFF181518);
-            static const softPink = Color(0xFFF69BD2);
-            static const coralSunset = Color(0xFFD55D3E);
-            static const background = Color(0xFFF3F2FA);
-            static const surfaceWhite = Colors.white;
+          class M3Colors {
+            static const primaryDark = Color(0xFF0F172A);
+            static const primaryAccent = Color(0xFF0F52BA);
+            static const emerald = Color(0xFF00A86B);
+            static const emeraldGlow = Color(0xFF4ADE80);
+            static const emeraldSoft = Color(0xFFE6FAF0);
+            static const surface = Color(0xFFF4F6FA);
+            static const card = Color(0xFFFFFFFF);
+            static const outline = Color(0xFFE2E8F0);
+            static const textMain = Color(0xFF0F172A);
+            static const textMuted = Color(0xFF64748B);
+            static const error = Color(0xFFDC2626);
           }
 
           class ReciboProApp extends StatelessWidget {
@@ -354,49 +362,44 @@ jobs:
                 debugShowCheckedModeBanner: false,
                 theme: ThemeData(
                   useMaterial3: true,
-                  scaffoldBackgroundColor: ReciboColors.background,
+                  scaffoldBackgroundColor: M3Colors.surface,
                   colorScheme: ColorScheme.fromSeed(
-                    seedColor: ReciboColors.skyBlue,
-                    primary: ReciboColors.skyBlue,
-                    secondary: ReciboColors.greenPill,
-                    tertiary: ReciboColors.softPink,
-                    surface: ReciboColors.surfaceWhite,
-                    onSurface: ReciboColors.darkPill,
+                    seedColor: M3Colors.primaryDark,
+                    primary: M3Colors.primaryDark,
+                    surface: M3Colors.surface,
+                    outline: M3Colors.outline,
                   ),
                   appBarTheme: const AppBarTheme(
-                    backgroundColor: ReciboColors.background,
-                    foregroundColor: ReciboColors.darkPill,
-                    centerTitle: true,
+                    backgroundColor: M3Colors.surface,
+                    foregroundColor: M3Colors.textMain,
+                    centerTitle: false,
                     elevation: 0,
+                    scrolledUnderElevation: 0,
                     titleTextStyle: TextStyle(
-                      color: ReciboColors.darkPill,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      color: M3Colors.textMain,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
                     ),
-                  ),
-                  cardTheme: CardTheme(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    color: ReciboColors.surfaceWhite,
                   ),
                   inputDecorationTheme: InputDecorationTheme(
                     filled: true,
-                    fillColor: ReciboColors.surfaceWhite,
+                    fillColor: M3Colors.card,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFFE2E0EE)),
+                      borderSide: const BorderSide(color: M3Colors.outline, width: 1.2),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Color(0xFFE2E0EE)),
+                      borderSide: const BorderSide(color: M3Colors.outline, width: 1.2),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: ReciboColors.skyBlue, width: 2),
+                      borderSide: const BorderSide(color: M3Colors.primaryDark, width: 2),
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    labelStyle: const TextStyle(color: M3Colors.textMuted, fontSize: 13),
+                    prefixIconColor: M3Colors.primaryDark,
                   ),
                 ),
                 home: const HomeScreen(),
@@ -430,10 +433,20 @@ jobs:
             String _dataAtual = '';
             int _numeroSequencial = 1;
             Uint8List? _logoBytes;
+            bool _hasSignature = false;
 
             List<Map<String, dynamic>> _recibosSalvos = [];
             List<Map<String, dynamic>> _clientesSalvos = [];
             int? _editingReciboIndex;
+
+            final List<String> _atalhos = [
+              'Mão de Obra',
+              'Prestação de Serviços',
+              'Suporte Técnico TI',
+              'Manutenção',
+              'Adiantamento',
+              'Consultoria',
+            ];
 
             @override
             void initState() {
@@ -441,9 +454,15 @@ jobs:
               _dataAtual = DateFormat('dd/MM/yyyy').format(DateTime.now());
               _signatureController = SignatureController(
                 penStrokeWidth: 3.2,
-                penColor: ReciboColors.darkPill,
+                penColor: M3Colors.primaryDark,
                 exportBackgroundColor: Colors.transparent,
               );
+              _signatureController.addListener(() {
+                final notEmpty = _signatureController.isNotEmpty;
+                if (notEmpty != _hasSignature) {
+                  setState(() => _hasSignature = notEmpty);
+                }
+              });
               _carregarConfiguracoes();
               _carregarRecibos();
               _carregarClientes();
@@ -480,46 +499,12 @@ jobs:
               }
             }
 
-            Future<void> _zerarNumeracao() async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  icon: const Icon(Icons.warning_amber_rounded, size: 36, color: ReciboColors.coralSunset),
-                  title: const Text('Zerar Numeração?'),
-                  content: const Text('O próximo recibo será reiniciado para 0001. Confirma?'),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-                    FilledButton(
-                      style: FilledButton.styleFrom(backgroundColor: ReciboColors.coralSunset),
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('Confirmar e Zerar'),
-                    ),
-                  ],
-                ),
-              );
-
-              if (confirm == true) {
-                final prefs = await SharedPreferences.getInstance();
-                setState(() {
-                  _numeroSequencial = 1;
-                });
-                await prefs.setInt('recibo_sequencial', 1);
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(behavior: SnackBarBehavior.floating, content: Text('Numeração zerada para 0001!')),
-                );
-              }
-            }
-
             Future<void> _selecionarLogo() async {
               final picker = ImagePicker();
               final picked = await picker.pickImage(source: ImageSource.gallery);
               if (picked != null) {
                 final bytes = await picked.readAsBytes();
-                setState(() {
-                  _logoBytes = bytes;
-                });
+                setState(() => _logoBytes = bytes);
                 _salvarConfiguracoes();
               }
             }
@@ -529,9 +514,7 @@ jobs:
               final raw = prefs.getString('historico_recibos');
               if (raw != null) {
                 final List decoded = jsonDecode(raw);
-                setState(() {
-                  _recibosSalvos = decoded.cast<Map<String, dynamic>>();
-                });
+                setState(() => _recibosSalvos = decoded.cast<Map<String, dynamic>>());
               }
             }
 
@@ -558,122 +541,15 @@ jobs:
               setState(() {});
             }
 
-            void _abrirModalCliente([Map<String, dynamic>? clienteExistente, int? index]) {
-              final nomeCtrl = TextEditingController(text: clienteExistente?['nome'] ?? '');
-              final docCtrl = TextEditingController(text: clienteExistente?['documento'] ?? '');
-              final telCtrl = TextEditingController(text: clienteExistente?['telefone'] ?? '');
-
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                useSafeArea: true,
-                showDragHandle: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                ),
-                builder: (ctx) => Padding(
-                  padding: EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 10,
-                    bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        clienteExistente == null ? 'Cadastrar Novo Cliente' : 'Editar Cliente',
-                        style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: nomeCtrl,
-                        decoration: const InputDecoration(labelText: 'Nome Completo', prefixIcon: Icon(Icons.person_outline)),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: docCtrl,
-                        decoration: const InputDecoration(labelText: 'CPF / CNPJ', prefixIcon: Icon(Icons.badge_outlined)),
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: telCtrl,
-                        decoration: const InputDecoration(labelText: 'Telefone / WhatsApp', prefixIcon: Icon(Icons.phone_outlined)),
-                        keyboardType: TextInputType.phone,
-                      ),
-                      const SizedBox(height: 20),
-                      FilledButton(
-                        onPressed: () {
-                          if (nomeCtrl.text.trim().isEmpty) return;
-                          final dados = {
-                            'nome': nomeCtrl.text.trim(),
-                            'documento': docCtrl.text.trim(),
-                            'telefone': telCtrl.text.trim(),
-                          };
-                          if (clienteExistente == null) {
-                            _clientesSalvos.add(dados);
-                          } else if (index != null) {
-                            _clientesSalvos[index] = dados;
-                          }
-                          _salvarClientes();
-                          Navigator.pop(ctx);
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: ReciboColors.skyBlue,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: const Text('Salvar Cliente', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            void _preencherReciboComCliente(Map<String, dynamic> cliente) {
-              setState(() {
-                _pagadorController.text = cliente['nome'] ?? '';
-                _docPagadorController.text = cliente['documento'] ?? '';
-                _currentIndex = 0;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  behavior: SnackBarBehavior.floating,
-                  content: Text("Cliente ${cliente['nome']} selecionado!"),
-                ),
-              );
-            }
-
-            void _carregarReciboParaEdicao(int index) {
-              final r = _recibosSalvos[index];
-              setState(() {
-                _editingReciboIndex = index;
-                _pagadorController.text = r['pagador'] ?? '';
-                _docPagadorController.text = r['docPagador'] ?? '';
-                _valorController.text = r['valor'] ?? '';
-                _referenteController.text = r['referente'] ?? '';
-                if (r['operador'] != null) _operadorController.text = r['operador'];
-                _currentIndex = 0;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  behavior: SnackBarBehavior.floating,
-                  content: Text("Editando Recibo Nº ${r['numero']}"),
-                ),
-              );
-            }
-
             Future<void> _emitirRecibo() async {
               if (_formKey.currentState!.validate()) {
+                HapticFeedback.mediumImpact();
                 if (_operadorController.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       behavior: SnackBarBehavior.floating,
-                      content: Text('Por favor, informe o Nome do Operador!'),
-                      backgroundColor: ReciboColors.coralSunset,
+                      content: Text('Informe o Nome do Operador / Emitente!'),
+                      backgroundColor: M3Colors.error,
                     ),
                   );
                   return;
@@ -702,7 +578,6 @@ jobs:
                 };
 
                 final prefs = await SharedPreferences.getInstance();
-
                 if (_editingReciboIndex != null) {
                   _recibosSalvos[_editingReciboIndex!] = dadosRecibo;
                   _editingReciboIndex = null;
@@ -743,94 +618,90 @@ jobs:
               }
             }
 
-            void _imprimirSegundaVia(Map<String, dynamic> r) {
-              Uint8List? sig;
-              if (r['assinatura'] != null) {
-                sig = base64Decode(r['assinatura']);
-              }
-              PdfGenerator.gerarECompartilhar(
-                context: context,
-                numeroRecibo: r['numero'],
-                emitente: r['emitente'] ?? _emitenteController.text,
-                documentoEmitente: r['docEmitente'] ?? _docEmitenteController.text,
-                pagador: r['pagador'],
-                documentoPagador: r['docPagador'],
-                valor: r['valor'],
-                referente: r['referente'],
-                data: r['data'],
-                operador: r['operador'] ?? '',
-                signatureBytes: sig,
-                logoBytes: _logoBytes,
-                apenasSegundaVia: true,
-              );
-            }
-
-            void _abrirWhatsApp() async {
-              final uri = Uri.parse("https://wa.me/5521974623033?text=Ol%C3%A1%20Robson%2C%20estou%20usando%20o%20Recibo%20Pro!");
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              }
-            }
-
-            void _abrirEmail() async {
-              final uri = Uri.parse("mailto:robson.cadete@gmail.com?subject=Contato%20Recibo%20Pro");
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri);
-              }
-            }
-
             Widget _buildFormAba() {
               final numExibicao = _editingReciboIndex != null
                   ? _recibosSalvos[_editingReciboIndex!]['numero']
                   : _numeroSequencial.toString().padLeft(4, '0');
 
               return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Card Topo com Formato Pill inspirado no Android
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                        padding: const EdgeInsets.all(20.0),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [ReciboColors.skyBlue, Color(0xFF867BF0), ReciboColors.coralSunset],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(30),
+                          color: M3Colors.primaryDark,
+                          borderRadius: BorderRadius.circular(26),
+                          boxShadow: [
+                            BoxShadow(
+                              color: M3Colors.primaryDark.withOpacity(0.2),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  "RECIBO DIGITAL",
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: 0.8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E293B),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    children: const [
+                                      Icon(Icons.circle, size: 7, color: M3Colors.emerald),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        "COMPROVANTE DIGITAL",
+                                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                Text(
-                                  "Nº $numExibicao",
-                                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white),
-                                ),
+                                Text(_dataAtual, style: const TextStyle(fontSize: 12, color: Colors.white70)),
                               ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.25),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.calendar_month, size: 16, color: Colors.white),
-                                  const SizedBox(width: 6),
-                                  Text(_dataAtual, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                                ],
-                              ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("RECIBO Nº", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white38)),
+                                    Text(
+                                      "Nº $numExibicao",
+                                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _operadorController.text.isEmpty ? "Operador: Geral" : "Operador: ${_operadorController.text}",
+                                      style: const TextStyle(fontSize: 11, color: Colors.white60),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF083321),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: M3Colors.emerald, width: 1.2),
+                                  ),
+                                  child: Text(
+                                    _valorController.text.isEmpty ? "R\$ 0,00" : "R\$ ${_valorController.text}",
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: M3Colors.emeraldGlow),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -838,10 +709,10 @@ jobs:
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _operadorController,
+                        onChanged: (_) => setState(() {}),
                         decoration: const InputDecoration(
-                          labelText: 'Nome do Operador / Emitente *',
-                          prefixIcon: Icon(Icons.badge_outlined, color: ReciboColors.skyBlue),
-                          helperText: 'Obrigatório para emissão',
+                          labelText: 'Operador / Emitente Responsável *',
+                          prefixIcon: Icon(Icons.badge_outlined),
                         ),
                         validator: (v) => v!.trim().isEmpty ? 'Informe o nome do operador' : null,
                       ),
@@ -849,219 +720,171 @@ jobs:
                       TextFormField(
                         controller: _pagadorController,
                         decoration: const InputDecoration(
-                          labelText: 'Nome do Cliente / Pagador',
-                          prefixIcon: Icon(Icons.person_outline, color: ReciboColors.skyBlue),
+                          labelText: 'Nome do Cliente / Pagador *',
+                          prefixIcon: Icon(Icons.person_outline),
                         ),
                         validator: (v) => v!.isEmpty ? 'Informe o nome do cliente' : null,
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _docPagadorController,
-                        decoration: const InputDecoration(
-                          labelText: 'CPF / CNPJ do Cliente',
-                          prefixIcon: Icon(Icons.credit_card_outlined, color: ReciboColors.skyBlue),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (v) => v!.isEmpty ? 'Informe o documento' : null,
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 5,
+                            child: TextFormField(
+                              controller: _docPagadorController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'CPF / CNPJ do Cliente',
+                                prefixIcon: Icon(Icons.credit_card_outlined),
+                              ),
+                              validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 4,
+                            child: TextFormField(
+                              controller: _valorController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              onChanged: (_) => setState(() {}),
+                              decoration: const InputDecoration(
+                                labelText: 'Valor Total (R\$)',
+                                prefixIcon: Icon(Icons.attach_money_rounded, color: M3Colors.emerald),
+                              ),
+                              validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _valorController,
-                        decoration: const InputDecoration(
-                          labelText: 'Valor Total',
-                          prefixText: 'R\$ ',
-                          prefixIcon: Icon(Icons.attach_money, color: ReciboColors.greenPill),
+                      const SizedBox(height: 16),
+                      const Text("Atalhos Rápidos de Serviço", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: M3Colors.textMain)),
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: _atalhos.map((chip) {
+                            final selected = _referenteController.text == chip;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: FilterChip(
+                                selected: selected,
+                                label: Text(chip),
+                                labelStyle: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: selected ? const Color(0xFF007A4D) : M3Colors.textMuted,
+                                ),
+                                backgroundColor: Colors.white,
+                                selectedColor: M3Colors.emeraldSoft,
+                                side: BorderSide(
+                                  color: selected ? M3Colors.emerald : M3Colors.outline,
+                                  width: 1.2,
+                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                onSelected: (val) {
+                                  setState(() {
+                                    _referenteController.text = val ? chip : '';
+                                  });
+                                },
+                              ),
+                            );
+                          }).toList(),
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        validator: (v) => v!.isEmpty ? 'Informe o valor' : null,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       TextFormField(
                         controller: _referenteController,
                         maxLines: 2,
                         decoration: const InputDecoration(
-                          labelText: 'Referente a...',
-                          prefixIcon: Icon(Icons.description_outlined, color: ReciboColors.skyBlue),
+                          labelText: 'Referente a... (Descrição Detalhada)',
+                          prefixIcon: Icon(Icons.description_outlined),
                         ),
                         validator: (v) => v!.isEmpty ? 'Informe a descrição' : null,
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
-                            children: const [
-                              Icon(Icons.draw_outlined, size: 20, color: ReciboColors.softPink),
-                              SizedBox(width: 8),
-                              Text("Assinatura Digital", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: ReciboColors.darkPill)),
+                            children: [
+                              const Icon(Icons.draw_outlined, size: 18, color: M3Colors.primaryDark),
+                              const SizedBox(width: 8),
+                              const Text("Assinatura do Emitente", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: M3Colors.textMain)),
+                              const SizedBox(width: 8),
+                              if (_hasSignature)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: M3Colors.emeraldSoft,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: M3Colors.emerald, width: 0.8),
+                                  ),
+                                  child: const Text("✓ Válida", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF007A4D))),
+                                ),
                             ],
                           ),
                           TextButton.icon(
                             onPressed: () => _signatureController.clear(),
-                            icon: const Icon(Icons.clear_all, size: 18, color: ReciboColors.coralSunset),
-                            label: const Text('Limpar', style: TextStyle(color: ReciboColors.coralSunset)),
+                            icon: const Icon(Icons.clear, size: 16, color: M3Colors.error),
+                            label: const Text('Limpar', style: TextStyle(color: M3Colors.error, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 6),
                       Container(
-                        height: 125,
+                        height: 130,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFE2E0EE)),
+                          border: Border.all(color: M3Colors.outline, width: 1.2),
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Signature(controller: _signatureController, height: 125, backgroundColor: Colors.white),
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Signature(controller: _signatureController, height: 130, backgroundColor: Colors.white),
+                            ),
+                            if (!_hasSignature)
+                              Positioned.fill(
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.touch_app_outlined, size: 22, color: Colors.grey.shade400),
+                                      const SizedBox(height: 4),
+                                      Text("Desenhe a assinatura com o dedo na linha guia", style: TextStyle(fontSize: 11, color: Colors.grey.shade400)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            Positioned(
+                              bottom: 24,
+                              left: 24,
+                              right: 24,
+                              child: Container(height: 1, color: Colors.grey.shade200),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 22),
                       FilledButton.icon(
                         onPressed: _emitirRecibo,
                         icon: const Icon(Icons.print_outlined),
                         label: Text(
                           _editingReciboIndex != null ? 'SALVAR E REEMITIR' : 'GERAR 1ª E 2ª VIA EM PDF',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                         ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: ReciboColors.darkPill,
+                          backgroundColor: M3Colors.primaryDark,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
                         ),
                       ),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
-              );
-            }
-
-            Widget _buildHistoricoAba() {
-              final query = _buscaReciboController.text.toLowerCase();
-              final filtrados = _recibosSalvos.where((r) {
-                final nome = (r['pagador'] ?? '').toString().toLowerCase();
-                final num = (r['numero'] ?? '').toString().toLowerCase();
-                return nome.contains(query) || num.contains(query);
-              }).toList();
-
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: SearchBar(
-                      controller: _buscaReciboController,
-                      elevation: const WidgetStatePropertyAll(0),
-                      backgroundColor: const WidgetStatePropertyAll(Colors.white),
-                      hintText: 'Pesquisar recibo ou cliente...',
-                      leading: const Icon(Icons.search, color: ReciboColors.skyBlue),
-                      trailing: [
-                        if (_buscaReciboController.text.isNotEmpty)
-                          IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _buscaReciboController.clear();
-                              setState(() {});
-                            },
-                          ),
-                      ],
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ),
-                  Expanded(
-                    child: filtrados.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.receipt_long_outlined, size: 52, color: Colors.grey.shade400),
-                                const SizedBox(height: 10),
-                                const Text("Nenhum recibo arquivado.", style: TextStyle(color: Colors.grey)),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            itemCount: filtrados.length,
-                            itemBuilder: (context, index) {
-                              final r = filtrados[index];
-                              final realIndex = _recibosSalvos.indexOf(r);
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                            decoration: BoxDecoration(
-                                              color: ReciboColors.darkPill,
-                                              borderRadius: BorderRadius.circular(16),
-                                            ),
-                                            child: Text("Nº ${r['numero']}",
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white)),
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                            decoration: BoxDecoration(
-                                              color: ReciboColors.greenPill.withOpacity(0.15),
-                                              borderRadius: BorderRadius.circular(16),
-                                            ),
-                                            child: Text("R\$ ${r['valor']}",
-                                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: ReciboColors.greenPill)),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Text(r['pagador'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: ReciboColors.darkPill)),
-                                      Text("Data: ${r['data']} • Op: ${r['operador'] ?? 'Geral'}",
-                                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                                      Text(r['referente'],
-                                          maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
-                                      const Divider(height: 20),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: [
-                                          FilledButton.icon(
-                                            style: FilledButton.styleFrom(
-                                              backgroundColor: ReciboColors.greenPill,
-                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                                            ),
-                                            icon: const Icon(Icons.print_outlined, size: 16),
-                                            label: const Text("Imprimir 2ª Via", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                            onPressed: () => _imprimirSegundaVia(r),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          IconButton(
-                                            icon: const Icon(Icons.edit_outlined, color: ReciboColors.skyBlue),
-                                            tooltip: 'Editar Recibo',
-                                            onPressed: () => _carregarReciboParaEdicao(realIndex),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete_outline, color: ReciboColors.coralSunset),
-                                            tooltip: 'Excluir',
-                                            onPressed: () async {
-                                              final prefs = await SharedPreferences.getInstance();
-                                              _recibosSalvos.removeAt(realIndex);
-                                              await prefs.setString('historico_recibos', jsonEncode(_recibosSalvos));
-                                              setState(() {});
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
               );
             }
 
@@ -1069,39 +892,32 @@ jobs:
               final query = _buscaClienteController.text.toLowerCase();
               final filtrados = _clientesSalvos.where((c) {
                 final nome = (c['nome'] ?? '').toString().toLowerCase();
-                return nome.contains(query);
+                final doc = (c['documento'] ?? '').toString().toLowerCase();
+                return nome.contains(query) || doc.contains(query);
               }).toList();
 
               return Scaffold(
                 backgroundColor: Colors.transparent,
                 floatingActionButton: FloatingActionButton.extended(
                   onPressed: () => _abrirModalCliente(),
-                  backgroundColor: ReciboColors.skyBlue,
+                  backgroundColor: M3Colors.primaryDark,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  icon: const Icon(Icons.person_add_alt_1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  icon: const Icon(Icons.person_add_rounded),
                   label: const Text("Novo Cliente", style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 body: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.all(16),
                       child: SearchBar(
                         controller: _buscaClienteController,
                         elevation: const WidgetStatePropertyAll(0),
                         backgroundColor: const WidgetStatePropertyAll(Colors.white),
-                        hintText: 'Pesquisar cliente (A-Z)...',
-                        leading: const Icon(Icons.search, color: ReciboColors.skyBlue),
-                        trailing: [
-                          if (_buscaClienteController.text.isNotEmpty)
-                            IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _buscaClienteController.clear();
-                                setState(() {});
-                              },
-                            ),
-                        ],
+                        hintText: 'Pesquisar cliente (A-Z) ou CPF...',
+                        side: const WidgetStatePropertyAll(BorderSide(color: M3Colors.outline)),
+                        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                        leading: const Icon(Icons.search, color: M3Colors.primaryDark),
                         onChanged: (_) => setState(() {}),
                       ),
                     ),
@@ -1111,47 +927,61 @@ jobs:
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.people_outline, size: 52, color: Colors.grey.shade400),
-                                  const SizedBox(height: 10),
-                                  const Text("Nenhum cliente cadastrado.", style: TextStyle(color: Colors.grey)),
+                                  Icon(Icons.people_outline, size: 54, color: Colors.grey.shade400),
+                                  const SizedBox(height: 12),
+                                  const Text("Nenhum cliente cadastrado", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: M3Colors.textMuted)),
                                 ],
                               ),
                             )
                           : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               itemCount: filtrados.length,
                               itemBuilder: (context, index) {
                                 final c = filtrados[index];
                                 final realIndex = _clientesSalvos.indexOf(c);
-                                return Card(
+                                return Container(
                                   margin: const EdgeInsets.only(bottom: 10),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: M3Colors.outline),
+                                  ),
                                   child: ListTile(
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     leading: CircleAvatar(
                                       radius: 24,
-                                      backgroundColor: ReciboColors.softPink.withOpacity(0.3),
-                                      foregroundColor: ReciboColors.darkPill,
-                                      child: Text(c['nome'][0].toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                      backgroundColor: M3Colors.emeraldSoft,
+                                      foregroundColor: const Color(0xFF007A4D),
+                                      child: Text(
+                                        (c['nome'] as String).isNotEmpty ? c['nome'][0].toUpperCase() : '?',
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                      ),
                                     ),
-                                    title: Text(c['nome'], style: const TextStyle(fontWeight: FontWeight.bold, color: ReciboColors.darkPill)),
+                                    title: Text(c['nome'], style: const TextStyle(fontWeight: FontWeight.bold, color: M3Colors.textMain)),
                                     subtitle: Text("Doc: ${c['documento'] ?? '-'}\nTel: ${c['telefone'] ?? '-'}"),
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.receipt_long, color: ReciboColors.greenPill),
-                                          tooltip: 'Preencher Recibo',
-                                          onPressed: () => _preencherReciboComCliente(c),
+                                        OutlinedButton(
+                                          style: OutlinedButton.styleFrom(
+                                            side: const BorderSide(color: M3Colors.emerald),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _pagadorController.text = c['nome'] ?? '';
+                                              _docPagadorController.text = c['documento'] ?? '';
+                                              _currentIndex = 0;
+                                            });
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(behavior: SnackBarBehavior.floating, content: Text("Cliente ${c['nome']} selecionado!")),
+                                            );
+                                          },
+                                          child: const Text("Emitir", style: TextStyle(color: Color(0xFF007A4D), fontWeight: FontWeight.bold, fontSize: 12)),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.edit_outlined, color: Colors.grey),
-                                          tooltip: 'Editar',
-                                          onPressed: () => _abrirModalCliente(c, realIndex),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete_outline, color: ReciboColors.coralSunset),
-                                          tooltip: 'Excluir',
+                                          icon: const Icon(Icons.delete_outline, color: M3Colors.error, size: 20),
                                           onPressed: () {
                                             _clientesSalvos.removeAt(realIndex);
                                             _salvarClientes();
@@ -1169,155 +999,412 @@ jobs:
               );
             }
 
+            void _abrirModalCliente([Map<String, dynamic>? clienteExistente, int? index]) {
+              final nomeCtrl = TextEditingController(text: clienteExistente?['nome'] ?? '');
+              final docCtrl = TextEditingController(text: clienteExistente?['documento'] ?? '');
+              final telCtrl = TextEditingController(text: clienteExistente?['telefone'] ?? '');
+
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+                builder: (ctx) => Padding(
+                  padding: EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    top: 20,
+                    bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('Cadastrar Novo Cliente', style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      TextField(controller: nomeCtrl, decoration: const InputDecoration(labelText: 'Nome Completo', prefixIcon: Icon(Icons.person_outline))),
+                      const SizedBox(height: 12),
+                      TextField(controller: docCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'CPF / CNPJ', prefixIcon: Icon(Icons.badge_outlined))),
+                      const SizedBox(height: 12),
+                      TextField(controller: telCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Telefone / WhatsApp', prefixIcon: Icon(Icons.phone_outlined))),
+                      const SizedBox(height: 20),
+                      FilledButton(
+                        onPressed: () {
+                          if (nomeCtrl.text.trim().isEmpty) return;
+                          _clientesSalvos.add({
+                            'nome': nomeCtrl.text.trim(),
+                            'documento': docCtrl.text.trim(),
+                            'telefone': telCtrl.text.trim(),
+                          });
+                          _salvarClientes();
+                          Navigator.pop(ctx);
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: M3Colors.primaryDark,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const Text('Salvar Cliente', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            Widget _buildHistoricoAba() {
+              final query = _buscaReciboController.text.toLowerCase();
+              final filtrados = _recibosSalvos.where((r) {
+                final nome = (r['pagador'] ?? '').toString().toLowerCase();
+                final num = (r['numero'] ?? '').toString().toLowerCase();
+                return nome.contains(query) || num.contains(query);
+              }).toList();
+
+              double total = 0.0;
+              for (var r in _recibosSalvos) {
+                final limpo = (r['valor'] ?? '0').toString().replaceAll('.', '').replaceAll(',', '.');
+                total += double.tryParse(limpo) ?? 0.0;
+              }
+
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: M3Colors.outline),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("FATURAMENTO TOTAL", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: M3Colors.textMuted)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(total),
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: M3Colors.primaryDark),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text("✓ Saldo acumulado", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: M3Colors.emerald)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: M3Colors.emerald, width: 1.2),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("RECIBOS EMITIDOS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: M3Colors.emerald)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "${_recibosSalvos.length} emitidos",
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: M3Colors.primaryDark),
+                                ),
+                                const SizedBox(height: 2),
+                                Text("Média: R\$ ${(total / (_recibosSalvos.isEmpty ? 1 : _recibosSalvos.length)).toStringAsFixed(2)}", style: const TextStyle(fontSize: 10, color: M3Colors.textMuted)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: SearchBar(
+                      controller: _buscaReciboController,
+                      elevation: const WidgetStatePropertyAll(0),
+                      backgroundColor: const WidgetStatePropertyAll(Colors.white),
+                      hintText: 'Pesquisar recibo ou cliente...',
+                      side: const WidgetStatePropertyAll(BorderSide(color: M3Colors.outline)),
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                      leading: const Icon(Icons.search, color: M3Colors.primaryDark),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  Expanded(
+                    child: filtrados.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.receipt_long_outlined, size: 54, color: Colors.grey.shade400),
+                                const SizedBox(height: 12),
+                                const Text("Nenhum recibo arquivado", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: M3Colors.textMuted)),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: filtrados.length,
+                            itemBuilder: (context, index) {
+                              final r = filtrados[index];
+                              final realIndex = _recibosSalvos.indexOf(r);
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: M3Colors.outline),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: M3Colors.primaryDark,
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Text("Nº ${r['numero']}", style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: M3Colors.emeraldSoft,
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(color: M3Colors.emerald, width: 0.8),
+                                          ),
+                                          child: Text("R\$ ${r['valor']}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF007A4D))),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(r['pagador'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: M3Colors.textMain)),
+                                    Text("Data: ${r['data']} • Op: ${r['operador'] ?? 'Geral'}", style: const TextStyle(fontSize: 12, color: M3Colors.textMuted)),
+                                    Text(r['referente'], maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                                    const Divider(height: 20),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        OutlinedButton.icon(
+                                          style: OutlinedButton.styleFrom(
+                                            side: const BorderSide(color: M3Colors.primaryDark),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          ),
+                                          icon: const Icon(Icons.print_outlined, size: 14, color: M3Colors.primaryDark),
+                                          label: const Text("Imprimir 2ª Via", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: M3Colors.primaryDark)),
+                                          onPressed: () {
+                                            Uint8List? sig;
+                                            if (r['assinatura'] != null) {
+                                              sig = base64Decode(r['assinatura']);
+                                            }
+                                            PdfGenerator.gerarECompartilhar(
+                                              context: context,
+                                              numeroRecibo: r['numero'],
+                                              emitente: r['emitente'] ?? _emitenteController.text,
+                                              documentoEmitente: r['docEmitente'] ?? _docEmitenteController.text,
+                                              pagador: r['pagador'],
+                                              documentoPagador: r['docPagador'],
+                                              valor: r['valor'],
+                                              referente: r['referente'],
+                                              data: r['data'],
+                                              operador: r['operador'] ?? '',
+                                              signatureBytes: sig,
+                                              logoBytes: _logoBytes,
+                                              apenasSegundaVia: true,
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete_outline, color: M3Colors.error, size: 20),
+                                          onPressed: () async {
+                                            final prefs = await SharedPreferences.getInstance();
+                                            _recibosSalvos.removeAt(realIndex);
+                                            await prefs.setString('historico_recibos', jsonEncode(_recibosSalvos));
+                                            setState(() {});
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              );
+            }
+
             Widget _buildConfigAba() {
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("Dados da Empresa / Emitente",
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ReciboColors.darkPill)),
-                            const SizedBox(height: 14),
-                            TextFormField(
-                              controller: _emitenteController,
-                              decoration: const InputDecoration(labelText: 'Nome da Empresa / Profissional', prefixIcon: Icon(Icons.business)),
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _docEmitenteController,
-                              decoration: const InputDecoration(labelText: 'CNPJ / CPF do Emitente', prefixIcon: Icon(Icons.badge_outlined)),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                if (_logoBytes != null)
-                                  Container(
-                                    width: 60,
-                                    height: 60,
-                                    margin: const EdgeInsets.only(right: 12),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: Colors.grey.shade300),
-                                      image: DecorationImage(image: MemoryImage(_logoBytes!), fit: BoxFit.contain),
-                                    ),
-                                  ),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    ),
-                                    onPressed: _selecionarLogo,
-                                    icon: const Icon(Icons.image_outlined, color: ReciboColors.skyBlue),
-                                    label: Text(_logoBytes == null ? 'Adicionar Logo' : 'Alterar Logo', style: const TextStyle(color: ReciboColors.darkPill)),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: M3Colors.outline),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Identidade do Emitente / Empresa", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: M3Colors.textMain)),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _emitenteController,
+                            decoration: const InputDecoration(labelText: 'Nome da Empresa / Profissional', prefixIcon: Icon(Icons.business_rounded)),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _docEmitenteController,
+                            decoration: const InputDecoration(labelText: 'CNPJ / CPF do Emitente', prefixIcon: Icon(Icons.badge_outlined)),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              if (_logoBytes != null)
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  margin: const EdgeInsets.only(right: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: M3Colors.outline),
+                                    image: DecorationImage(image: MemoryImage(_logoBytes!), fit: BoxFit.cover),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            FilledButton(
-                              onPressed: _salvarConfiguracoes,
-                              style: FilledButton.styleFrom(
-                                backgroundColor: ReciboColors.skyBlue,
-                                minimumSize: const Size.fromHeight(50),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    side: const BorderSide(color: M3Colors.outline),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  ),
+                                  onPressed: _selecionarLogo,
+                                  icon: const Icon(Icons.image_outlined, color: M3Colors.primaryDark),
+                                  label: Text(_logoBytes == null ? 'Inserir Logo no PDF' : 'Alterar Logo', style: const TextStyle(color: M3Colors.textMain, fontWeight: FontWeight.bold)),
+                                ),
                               ),
-                              child: const Text('Salvar Dados da Empresa', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          FilledButton(
+                            onPressed: _salvarConfiguracoes,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: M3Colors.primaryDark,
+                              minimumSize: const Size.fromHeight(50),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
-                          ],
-                        ),
+                            child: const Text('Salvar Dados da Empresa', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("Controle de Numeração",
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ReciboColors.darkPill)),
-                            const SizedBox(height: 8),
-                            Text("Próximo número: ${_numeroSequencial.toString().padLeft(4, '0')}",
-                                style: const TextStyle(fontWeight: FontWeight.w600, color: ReciboColors.skyBlue)),
-                            const SizedBox(height: 14),
-                            OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: ReciboColors.coralSunset,
-                                side: const BorderSide(color: ReciboColors.coralSunset),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: M3Colors.outline),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Controle Sequencial de Recibos", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: M3Colors.textMain)),
+                          const SizedBox(height: 6),
+                          Text("Próximo número: ${_numeroSequencial.toString().padLeft(4, '0')}", style: const TextStyle(fontWeight: FontWeight.bold, color: M3Colors.primaryAccent)),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: M3Colors.error,
+                              side: const BorderSide(color: M3Colors.error),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                            onPressed: () async {
+                              final prefs = await SharedPreferences.getInstance();
+                              setState(() => _numeroSequencial = 1);
+                              await prefs.setInt('recibo_sequencial', 1);
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(behavior: SnackBarBehavior.floating, content: Text('Numeração reiniciada para 0001!')),
+                              );
+                            },
+                            icon: const Icon(Icons.restart_alt_rounded),
+                            label: const Text('Reiniciar Numeração para 0001'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        color: M3Colors.primaryDark,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Desenvolvedor", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          const Text("Robson Cadete", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
+                          const SizedBox(height: 6),
+                          const Text("E-mail: robson.cadete@gmail.com", style: TextStyle(color: Colors.white60, fontSize: 13)),
+                          const Text("Telefone: (21) 97462-3033", style: TextStyle(color: Colors.white60, fontSize: 13)),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF25D366),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                  onPressed: () async {
+                                    final uri = Uri.parse("https://wa.me/5521974623033?text=Ol%C3%A1%20Robson%2C%20estou%20usando%20o%20Recibo%20Pro!");
+                                    if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  },
+                                  icon: const Icon(Icons.chat),
+                                  label: const Text("WhatsApp", style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
                               ),
-                              onPressed: _zerarNumeracao,
-                              icon: const Icon(Icons.restart_alt),
-                              label: const Text('Zerar Numeração de Recibos'),
-                            ),
-                          ],
-                        ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Colors.white24),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                  onPressed: () async {
+                                    final uri = Uri.parse("mailto:robson.cadete@gmail.com");
+                                    if (await canLaunchUrl(uri)) launchUrl(uri);
+                                  },
+                                  icon: const Icon(Icons.email_outlined),
+                                  label: const Text("E-mail"),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                      color: ReciboColors.darkPill,
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: const [
-                                Icon(Icons.code, color: ReciboColors.softPink),
-                                SizedBox(width: 8),
-                                Text("Desenvolvedor",
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            const Text("Robson Cadete", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                            const SizedBox(height: 4),
-                            const Text("E-mail: robson.cadete@gmail.com", style: TextStyle(color: Colors.white70)),
-                            const Text("Telefone: (21) 97462-3033", style: TextStyle(color: Colors.white70)),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: _abrirWhatsApp,
-                                    icon: const Icon(Icons.chat),
-                                    label: const Text("WhatsApp", style: TextStyle(fontWeight: FontWeight.bold)),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: ReciboColors.greenPill,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: _abrirEmail,
-                                    icon: const Icon(Icons.email_outlined, color: Colors.white),
-                                    label: const Text("E-mail", style: TextStyle(color: Colors.white)),
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(color: Colors.white38),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               );
@@ -1341,14 +1428,30 @@ jobs:
                 bottomNavigationBar: NavigationBar(
                   elevation: 0,
                   backgroundColor: Colors.white,
-                  indicatorColor: ReciboColors.skyBlue.withOpacity(0.2),
+                  indicatorColor: M3Colors.primaryDark,
                   selectedIndex: _currentIndex,
                   onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
                   destinations: const [
-                    NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long, color: ReciboColors.skyBlue), label: 'Emitir'),
-                    NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people, color: ReciboColors.skyBlue), label: 'Clientes'),
-                    NavigationDestination(icon: Icon(Icons.history_outlined), selectedIcon: Icon(Icons.history, color: ReciboColors.skyBlue), label: 'Salvos'),
-                    NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings, color: ReciboColors.skyBlue), label: 'Empresa'),
+                    NavigationDestination(
+                      icon: Icon(Icons.receipt_long_outlined),
+                      selectedIcon: Icon(Icons.receipt_long, color: Colors.white),
+                      label: 'Emitir',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.people_outline),
+                      selectedIcon: Icon(Icons.people, color: Colors.white),
+                      label: 'Clientes',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.history_outlined),
+                      selectedIcon: Icon(Icons.history, color: Colors.white),
+                      label: 'Salvos',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.settings_outlined),
+                      selectedIcon: Icon(Icons.settings, color: Colors.white),
+                      label: 'Empresa',
+                    ),
                   ],
                 ),
               );
