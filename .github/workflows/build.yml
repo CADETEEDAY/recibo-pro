@@ -30,7 +30,7 @@ jobs:
         run: |
           flutter create --project-name recibo_pro --platforms=android --org com.recibo.pro .
 
-      - name: Ajustar Android compileSdk 35, Kotlin e AAPT2
+      - name: Ajustar Android compileSdk 35, Kotlin, AAPT2 e Queries de Link
         run: |
           sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 35/g' android/app/build.gradle || true
           sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle || true
@@ -38,6 +38,7 @@ jobs:
           sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 35/g' android/app/build.gradle || true
           sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.24"/g' android/settings.gradle || true
           echo "android.aapt2Version=8.6.1-11315950" >> android/gradle.properties
+          sed -i 's|</manifest>|  <queries><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent><intent><action android:name="android.intent.action.SENDTO"/><data android:scheme="mailto"/></intent><package android:name="com.whatsapp"/><package android:name="com.whatsapp.w4b"/></queries></manifest>|g' android/app/src/main/AndroidManifest.xml || true
 
       - name: Escrever pubspec.yaml
         run: |
@@ -45,7 +46,7 @@ jobs:
           name: recibo_pro
           description: "Sistema Avancado de Recibos Digitais Material You"
           publish_to: 'none'
-          version: 2.7.0+9
+          version: 2.8.0+10
 
           environment:
             sdk: '>=3.0.0 <4.0.0'
@@ -588,6 +589,48 @@ jobs:
               _ordenarClientes();
               await prefs.setString('lista_clientes', jsonEncode(_clientesSalvos));
               setState(() {});
+            }
+
+            Future<void> _abrirWhatsApp() async {
+              final Uri uri = Uri.parse("https://wa.me/5521974623033?text=Ol%C3%A1%20Robson%2C%20estou%20usando%20o%20Recibo%20Pro!");
+              try {
+                final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+                if (!launched) {
+                  await launchUrl(uri, mode: LaunchMode.platformDefault);
+                }
+              } catch (_) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      content: Text('Não foi possível abrir o WhatsApp.'),
+                    ),
+                  );
+                }
+              }
+            }
+
+            Future<void> _abrirEmail() async {
+              final Uri emailUri = Uri(
+                scheme: 'mailto',
+                path: 'robson.cadete@gmail.com',
+                query: 'subject=Contato%20Recibo%20Pro',
+              );
+              try {
+                final launched = await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+                if (!launched) {
+                  await launchUrl(emailUri, mode: LaunchMode.platformDefault);
+                }
+              } catch (_) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      content: Text('Não foi possível abrir o aplicativo de e-mail.'),
+                    ),
+                  );
+                }
+              }
             }
 
             Future<void> _emitirRecibo() async {
@@ -1431,7 +1474,7 @@ jobs:
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              IconButton.filled(
+                              IconButton(
                                 style: IconButton.styleFrom(
                                   backgroundColor: M3Colors.primaryDark,
                                   foregroundColor: Colors.white,
@@ -1523,9 +1566,41 @@ jobs:
                           const Text("Desenvolvedor", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
                           const Text("Robson Cadete", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                          const SizedBox(height: 6),
-                          const Text("E-mail: robson.cadete@gmail.com", style: TextStyle(color: Colors.white60, fontSize: 13)),
-                          const Text("Telefone: (21) 97462-3033", style: TextStyle(color: Colors.white60, fontSize: 13)),
+                          const SizedBox(height: 10),
+                          InkWell(
+                            onTap: _abrirEmail,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.email_outlined, size: 16, color: M3Colors.emeraldGlow),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "robson.cadete@gmail.com",
+                                    style: TextStyle(color: Colors.white, fontSize: 13, decoration: TextDecoration.underline),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: _abrirWhatsApp,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.phone_android_rounded, size: 16, color: M3Colors.emeraldGlow),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "(21) 97462-3033",
+                                    style: TextStyle(color: Colors.white, fontSize: 13, decoration: TextDecoration.underline),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 16),
                           Row(
                             children: [
@@ -1534,13 +1609,11 @@ jobs:
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF25D366),
                                     foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                   ),
-                                  onPressed: () async {
-                                    final uri = Uri.parse("https://wa.me/5521974623033?text=Ol%C3%A1%20Robson%2C%20estou%20usando%20o%20Recibo%20Pro!");
-                                    if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
-                                  },
-                                  icon: const Icon(Icons.chat),
+                                  onPressed: _abrirWhatsApp,
+                                  icon: const Icon(Icons.chat_rounded),
                                   label: const Text("WhatsApp", style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ),
@@ -1548,16 +1621,14 @@ jobs:
                               Expanded(
                                 child: OutlinedButton.icon(
                                   style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Colors.white24),
+                                    side: const BorderSide(color: Colors.white30),
                                     foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                   ),
-                                  onPressed: () async {
-                                    final uri = Uri.parse("mailto:robson.cadete@gmail.com");
-                                    if (await canLaunchUrl(uri)) launchUrl(uri);
-                                  },
+                                  onPressed: _abrirEmail,
                                   icon: const Icon(Icons.email_outlined),
-                                  label: const Text("E-mail"),
+                                  label: const Text("E-mail", style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ),
                             ],
