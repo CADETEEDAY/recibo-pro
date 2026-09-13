@@ -45,7 +45,7 @@ jobs:
           name: recibo_pro
           description: "Sistema Avancado de Recibos Digitais Material You"
           publish_to: 'none'
-          version: 2.5.0+7
+          version: 2.6.0+8
 
           environment:
             sdk: '>=3.0.0 <4.0.0'
@@ -428,6 +428,7 @@ jobs:
 
             final _buscaReciboController = TextEditingController();
             final _buscaClienteController = TextEditingController();
+            final _novoAtalhoController = TextEditingController();
 
             late SignatureController _signatureController;
             String _dataAtual = '';
@@ -439,7 +440,7 @@ jobs:
             List<Map<String, dynamic>> _clientesSalvos = [];
             int? _editingReciboIndex;
 
-            final List<String> _atalhos = [
+            List<String> _atalhos = [
               'Mão de Obra',
               'Prestação de Serviços',
               'Suporte Técnico TI',
@@ -471,6 +472,16 @@ jobs:
             @override
             void dispose() {
               _signatureController.dispose();
+              _operadorController.dispose();
+              _emitenteController.dispose();
+              _docEmitenteController.dispose();
+              _pagadorController.dispose();
+              _docPagadorController.dispose();
+              _valorController.dispose();
+              _referenteController.dispose();
+              _buscaReciboController.dispose();
+              _buscaClienteController.dispose();
+              _novoAtalhoController.dispose();
               super.dispose();
             }
 
@@ -481,6 +492,10 @@ jobs:
                 _emitenteController.text = prefs.getString('empresa_nome') ?? '';
                 _docEmitenteController.text = prefs.getString('empresa_doc') ?? '';
                 _numeroSequencial = prefs.getInt('recibo_sequencial') ?? 1;
+                final atalhosSalvos = prefs.getStringList('atalhos_servicos');
+                if (atalhosSalvos != null && atalhosSalvos.isNotEmpty) {
+                  _atalhos = List<String>.from(atalhosSalvos);
+                }
                 final logoBase64 = prefs.getString('empresa_logo');
                 if (logoBase64 != null) {
                   _logoBytes = base64Decode(logoBase64);
@@ -494,9 +509,43 @@ jobs:
               await prefs.setString('empresa_nome', _emitenteController.text);
               await prefs.setString('empresa_doc', _docEmitenteController.text);
               await prefs.setInt('recibo_sequencial', _numeroSequencial);
+              await prefs.setStringList('atalhos_servicos', _atalhos);
               if (_logoBytes != null) {
                 await prefs.setString('empresa_logo', base64Encode(_logoBytes!));
               }
+            }
+
+            Future<void> _adicionarAtalho(String servico) async {
+              final limpo = servico.trim();
+              if (limpo.isEmpty) return;
+              if (_atalhos.contains(limpo)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(behavior: SnackBarBehavior.floating, content: Text('Este atalho já existe!')),
+                );
+                return;
+              }
+              setState(() {
+                _atalhos.add(limpo);
+              });
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setStringList('atalhos_servicos', _atalhos);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(behavior: SnackBarBehavior.floating, content: Text('Serviço "$limpo" adicionado aos atalhos!')),
+              );
+            }
+
+            Future<void> _removerAtalho(int index) async {
+              final removido = _atalhos[index];
+              setState(() {
+                _atalhos.removeAt(index);
+              });
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setStringList('atalhos_servicos', _atalhos);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(behavior: SnackBarBehavior.floating, content: Text('Serviço "$removido" removido dos atalhos.')),
+              );
             }
 
             Future<void> _selecionarLogo() async {
@@ -757,41 +806,54 @@ jobs:
                         ],
                       ),
                       const SizedBox(height: 16),
-                      const Text("Atalhos Rápidos de Serviço", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: M3Colors.textMain)),
-                      const SizedBox(height: 8),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: _atalhos.map((chip) {
-                            final selected = _referenteController.text == chip;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                selected: selected,
-                                label: Text(chip),
-                                labelStyle: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: selected ? const Color(0xFF007A4D) : M3Colors.textMuted,
-                                ),
-                                backgroundColor: Colors.white,
-                                selectedColor: M3Colors.emeraldSoft,
-                                side: BorderSide(
-                                  color: selected ? M3Colors.emerald : M3Colors.outline,
-                                  width: 1.2,
-                                ),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                onSelected: (val) {
-                                  setState(() {
-                                    _referenteController.text = val ? chip : '';
-                                  });
-                                },
-                              ),
-                            );
-                          }).toList(),
+                      if (_atalhos.isNotEmpty) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Atalhos Rápidos de Serviço", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: M3Colors.textMain)),
+                            TextButton.icon(
+                              style: TextButton.styleFrom(padding: EdgeInsets.zero, visualDensity: VisualDensity.compact),
+                              onPressed: () => setState(() => _currentIndex = 3),
+                              icon: const Icon(Icons.tune_rounded, size: 14, color: M3Colors.primaryAccent),
+                              label: const Text("Gerenciar", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: M3Colors.primaryAccent)),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 10),
+                        const SizedBox(height: 6),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: _atalhos.map((chip) {
+                              final selected = _referenteController.text == chip;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: FilterChip(
+                                  selected: selected,
+                                  label: Text(chip),
+                                  labelStyle: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: selected ? const Color(0xFF007A4D) : M3Colors.textMuted,
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  selectedColor: M3Colors.emeraldSoft,
+                                  side: BorderSide(
+                                    color: selected ? M3Colors.emerald : M3Colors.outline,
+                                    width: 1.2,
+                                  ),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  onSelected: (val) {
+                                    setState(() {
+                                      _referenteController.text = val ? chip : '';
+                                    });
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                       TextFormField(
                         controller: _referenteController,
                         maxLines: 2,
@@ -1310,6 +1372,105 @@ jobs:
                             ),
                             child: const Text('Salvar Dados da Empresa', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: M3Colors.outline),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Atalhos Rápidos de Serviço",
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: M3Colors.textMain),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: M3Colors.emeraldSoft,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  "${_atalhos.length} ativos",
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF007A4D)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            "Cadastre os serviços mais frequentes para selecioná-los com 1 toque na emissão.",
+                            style: TextStyle(fontSize: 12, color: M3Colors.textMuted),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _novoAtalhoController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Adicionar novo serviço',
+                                    hintText: 'Ex: Troca de Tela, Pintura...',
+                                    prefixIcon: Icon(Icons.add_task_rounded),
+                                  ),
+                                  onSubmitted: (val) {
+                                    if (val.trim().isNotEmpty) {
+                                      _adicionarAtalho(val);
+                                      _novoAtalhoController.clear();
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              IconButton.filled(
+                                style: IconButton.filledStyleFrom(
+                                  backgroundColor: M3Colors.primaryDark,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.all(14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                icon: const Icon(Icons.add_rounded),
+                                tooltip: 'Adicionar Atalho',
+                                onPressed: () {
+                                  if (_novoAtalhoController.text.trim().isNotEmpty) {
+                                    _adicionarAtalho(_novoAtalhoController.text);
+                                    _novoAtalhoController.clear();
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          if (_atalhos.isEmpty)
+                            const Text(
+                              "Nenhum atalho cadastrado. Digite um nome acima para adicionar.",
+                              style: TextStyle(fontSize: 12, color: M3Colors.textMuted),
+                            )
+                          else
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: List.generate(_atalhos.length, (i) {
+                                final item = _atalhos[i];
+                                return Chip(
+                                  label: Text(item, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: M3Colors.textMain)),
+                                  backgroundColor: M3Colors.surface,
+                                  side: const BorderSide(color: M3Colors.outline),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  deleteIcon: const Icon(Icons.close_rounded, size: 16, color: M3Colors.error),
+                                  onDeleted: () => _removerAtalho(i),
+                                );
+                              }),
+                            ),
                         ],
                       ),
                     ),
